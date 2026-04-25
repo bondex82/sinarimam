@@ -1,0 +1,180 @@
+{
+  "entities": {
+    "about": {
+      "title": "NGO About Information",
+      "description": "Static and dynamic information about the NGO",
+      "type": "object",
+      "properties": {
+        "vision": { "type": "string" },
+        "mission": { "type": "string" },
+        "goal": { "type": "string" },
+        "history": { "type": "string" },
+        "founderName": { "type": "string" },
+        "founderBio": { "type": "string" },
+        "founderWelcome": { "type": "string" },
+        "founderPhoto": { "type": "string", "format": "uri" },
+        "contactEmail": { "type": "string", "format": "email" },
+        "contactPhone": { "type": "string" },
+        "address": { "type": "string" }
+      },
+      "required": ["vision", "mission", "goal"]
+    },
+    "project": {
+      "title": "Project",
+      "description": "Information about NGO projects",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "status": { "type": "string", "enum": ["Active", "Completed", "Upcoming"] },
+        "imageUrl": { "type": "string", "format": "uri" },
+        "targetAmount": { "type": "number" },
+        "raisedAmount": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["title", "description", "status"]
+    },
+    "event": {
+      "title": "Event",
+      "description": "Upcoming or past NGO events",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "date": { "type": "string", "format": "date-time" },
+        "location": { "type": "string" },
+        "imageUrl": { "type": "string", "format": "uri" }
+      },
+      "required": ["title", "date"]
+    },
+    "news": {
+      "title": "News Update",
+      "description": "News and updates for the NGO",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "content": { "type": "string" },
+        "publishedAt": { "type": "string", "format": "date-time" },
+        "imageUrl": { "type": "string", "format": "uri" }
+      },
+      "required": ["title", "content"]
+    },
+    "galleryItem": {
+      "title": "Gallery Item",
+      "description": "Photos and videos for the gallery",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "url": { "type": "string", "format": "uri" },
+        "type": { "type": "string", "enum": ["photo", "video"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["url", "type"]
+    },
+    "volunteer": {
+      "title": "Volunteer Application",
+      "description": "Information provided by volunteers signing up",
+      "type": "object",
+      "properties": {
+        "fullName": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "phone": { "type": "string" },
+        "experience": { "type": "string" },
+        "status": { "type": "string", "enum": ["Pending", "Approved", "Rejected"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["fullName", "email"]
+    },
+    "surveyResponse": {
+      "title": "Survey Response",
+      "description": "Data collected via dynamic surveys",
+      "type": "object",
+      "properties": {
+        "surveyTitle": { "type": "string" },
+        "respondentName": { "type": "string" },
+        "respondentEmail": { "type": "string", "format": "email" },
+        "answers": { "type": "object" },
+        "submittedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["surveyTitle", "answers"]
+    },
+    "beneficiary": {
+      "title": "Beneficiary",
+      "description": "Data collected for project impact analysis",
+      "type": "object",
+      "properties": {
+        "projectId": { "type": "string" },
+        "projectName": { "type": "string" },
+        "date": { "type": "string", "format": "date" },
+        "location": { "type": "string" },
+        "name": { "type": "string" },
+        "dob": { "type": "string", "format": "date" },
+        "gender": { "type": "string", "enum": ["Male", "Female", "Other"] },
+        "nationality": { "type": "string" },
+        "stateOfOrigin": { "type": "string" },
+        "stateOfBirth": { "type": "string" },
+        "lgOfOrigin": { "type": "string" },
+        "residentialAddress": { "type": "string" },
+        "parentName": { "type": "string" },
+        "parentPhone": { "type": "string" },
+        "parentAddress": { "type": "string" },
+        "photoUrl": { "type": "string", "format": "uri" },
+        "educationBenefits": { "type": "array", "items": { "type": "string" } },
+        "scholarship": {
+          "type": "object",
+          "properties": {
+            "schoolName": { "type": "string" },
+            "amount": { "type": "number" },
+            "duration": { "type": "string" }
+          }
+        },
+        "healthBenefits": { "type": "array", "items": { "type": "string" } },
+        "medicalOutreach": {
+          "type": "object",
+          "properties": {
+            "diagnosis": { "type": "string" },
+            "drugs": { "type": "string" }
+          }
+        },
+        "clothing": { "type": "array", "items": { "type": "string" } },
+        "accessories": { "type": "array", "items": { "type": "string" } },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["projectId", "name"]
+    }
+  },
+  "firestore": {
+    "config/about": {
+      "schema": "about",
+      "description": "Singleton for NGO static content"
+    },
+    "projects/{projectId}": {
+      "schema": "project",
+      "description": "Collection of NGO projects"
+    },
+    "events/{eventId}": {
+      "schema": "event",
+      "description": "Collection of NGO events"
+    },
+    "news/{newsId}": {
+      "schema": "news",
+      "description": "Collection of news items"
+    },
+    "gallery/{itemId}": {
+      "schema": "galleryItem",
+      "description": "Collection of gallery items"
+    },
+    "volunteers/{volunteerId}": {
+      "schema": "volunteer",
+      "description": "Collection of volunteer sign-ups"
+    },
+    "surveys/{surveyId}": {
+      "schema": "surveyResponse",
+      "description": "Collection of data collection responses"
+    },
+    "beneficiaries/{beneficiaryId}": {
+      "schema": "beneficiary",
+      "description": "Records of project beneficiaries"
+    }
+  }
+}

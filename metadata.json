@@ -1,0 +1,6 @@
+{
+  "name": "Sinarimam Foundation Portal",
+  "description": "A comprehensive management platform for Sinarimam Foundation featuring dynamic content (news, projects, events), a gallery, volunteer management, and data collection tools.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["Dynamic CMS", "Volunteer Management", "Data Surveys", "Secure Admin Panel"]
+}

@@ -1,0 +1,142 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 0. Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper Primitives
+    function isSignedIn() { return request.auth != null; }
+    function isValidId(id) { return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); }
+    function isAdmin() { return isSignedIn() && (
+      exists(/databases/$(database)/documents/admins/$(request.auth.uid)) ||
+      request.auth.token.email == 'bondimadigitalworld@gmail.com'
+    ); }
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+
+    // Validation Helpers
+    function isValidAbout(data) {
+      return data.keys().hasAll(['vision', 'mission', 'goal']) &&
+             data.vision is string && data.vision.size() <= 5000 &&
+             data.mission is string && data.mission.size() <= 5000 &&
+             data.goal is string && data.goal.size() <= 5000 &&
+             (!('founderWelcome' in data) || (data.founderWelcome is string && data.founderWelcome.size() <= 3000));
+    }
+
+    function isValidProject(data) {
+      return data.keys().hasAll(['title', 'description', 'status']) &&
+             data.title is string && data.title.size() <= 200 &&
+             data.description is string && data.description.size() <= 10000 &&
+             data.status in ['Active', 'Completed', 'Upcoming'] &&
+             (!('targetAmount' in data) || data.targetAmount is number) &&
+             (!('raisedAmount' in data) || data.raisedAmount is number);
+    }
+
+    function isValidEvent(data) {
+      return data.keys().hasAll(['title', 'date']) &&
+             data.title is string && data.title.size() <= 200 &&
+             data.date is timestamp;
+    }
+
+    function isValidNews(data) {
+      return data.keys().hasAll(['title', 'content']) &&
+             data.title is string && data.title.size() <= 200 &&
+             data.content is string && data.content.size() <= 20000;
+    }
+
+    function isValidGalleryItem(data) {
+      return data.keys().hasAll(['url', 'type']) &&
+             data.url is string && data.url.size() <= 1000 &&
+             data.type in ['photo', 'video'];
+    }
+
+    function isValidVolunteer(data) {
+      return data.keys().hasAll(['fullName', 'email']) &&
+             data.fullName is string && data.fullName.size() <= 200 &&
+             data.email is string && data.email.size() <= 200 &&
+             (!('status' in data) || data.status in ['Pending', 'Approved', 'Rejected']);
+    }
+
+    function isValidSurvey(data) {
+      return data.keys().hasAll(['surveyTitle', 'answers']) &&
+             data.surveyTitle is string && data.surveyTitle.size() <= 200 &&
+             data.answers is map;
+    }
+
+    function isValidBeneficiary(data) {
+      return data.keys().hasAll(['projectId', 'name']) &&
+             data.projectId is string &&
+             data.name is string && data.name.size() <= 200 &&
+             (!('gender' in data) || data.gender in ['Male', 'Female', 'Other']) &&
+             (!('educationBenefits' in data) || data.educationBenefits is list) &&
+             (!('healthBenefits' in data) || data.healthBenefits is list) &&
+             (!('clothing' in data) || data.clothing is list) &&
+             (!('accessories' in data) || data.accessories is list);
+    }
+
+    // Rules
+    match /admins/{userId} {
+      allow read: if isAdmin();
+      allow write: if false; // Only manageable via console or specialized tool
+    }
+
+    match /config/about {
+      allow read: if true;
+      allow write: if isAdmin() && isValidAbout(incoming());
+    }
+
+    match /projects/{projectId} {
+      allow read: if true;
+      allow create: if isAdmin() && isValidId(projectId) && isValidProject(incoming());
+      allow update: if isAdmin() && isValidId(projectId) && isValidProject(incoming());
+      allow delete: if isAdmin();
+    }
+
+    match /beneficiaries/{beneficiaryId} {
+      allow read: if isAdmin();
+      allow create: if isAdmin() && isValidId(beneficiaryId) && isValidBeneficiary(incoming());
+      allow update: if isAdmin() && isValidId(beneficiaryId) && isValidBeneficiary(incoming());
+      allow delete: if isAdmin();
+    }
+
+    match /events/{eventId} {
+      allow read: if true;
+      allow create: if isAdmin() && isValidId(eventId) && isValidEvent(incoming());
+      allow update: if isAdmin() && isValidId(eventId) && isValidEvent(incoming());
+      allow delete: if isAdmin();
+    }
+
+    match /news/{newsId} {
+      allow read: if true;
+      allow create: if isAdmin() && isValidId(newsId) && isValidNews(incoming());
+      allow update: if isAdmin() && isValidId(newsId) && isValidNews(incoming());
+      allow delete: if isAdmin();
+    }
+
+    match /gallery/{itemId} {
+      allow read: if true;
+      allow create: if isAdmin() && isValidId(itemId) && isValidGalleryItem(incoming());
+      allow update: if isAdmin() && isValidId(itemId) && isValidGalleryItem(incoming());
+      allow delete: if isAdmin();
+    }
+
+    match /volunteers/{volunteerId} {
+      allow list: if isAdmin();
+      allow get: if isAdmin() || (isSignedIn() && existing().email == request.auth.token.email);
+      allow create: if isValidId(volunteerId) && isValidVolunteer(incoming()) && 
+                    (!('status' in incoming()) || incoming().status == 'Pending');
+      allow update: if isAdmin() && isValidId(volunteerId) && isValidVolunteer(incoming());
+      allow delete: if isAdmin();
+    }
+
+    match /surveys/{surveyId} {
+      allow list: if isAdmin();
+      allow get: if isAdmin();
+      allow create: if isValidId(surveyId) && isValidSurvey(incoming());
+      allow update: if isAdmin() && isValidId(surveyId) && isValidSurvey(incoming());
+      allow delete: if isAdmin();
+    }
+  }
+}
