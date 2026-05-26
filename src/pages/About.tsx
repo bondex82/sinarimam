@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Info, Target, Compass, History, User } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Info, Target, Compass, History, User, ShieldCheck } from 'lucide-react';
 import { getAboutInfo } from '../services/cmsService';
 
 export default function About() {
@@ -89,6 +90,22 @@ export default function About() {
              </div>
           </div>
         </div>
+      </section>
+
+      {/* Board CTA Banner */}
+      <section className="bg-white rounded-[40px] border border-slate-100 p-8 md:p-12 text-center max-w-4xl mx-auto space-y-6 shadow-sm hover:shadow-md transition-shadow">
+        <div className="w-16 h-16 bg-gold/10 text-gold rounded-full flex items-center justify-center mx-auto">
+          <ShieldCheck size={32} />
+        </div>
+        <div className="space-y-2">
+          <h3 className="text-2xl font-black text-ngo-blue">Governance & Trustees</h3>
+          <p className="text-slate-500 text-sm max-w-xl mx-auto leading-relaxed">
+            Our Foundation operates with strict compliance and transparency under the oversight of an esteemed Board of Directors and specialized advisory committees.
+          </p>
+        </div>
+        <Link to="/board" className="inline-flex bg-ngo-blue text-white hover:bg-ngo-blue/95 px-8 py-3.5 rounded-full text-xs font-black shadow-lg shadow-ngo-blue/20 hover:scale-105 active:scale-[0.98] transition-all">
+          Meet the Board of Directors
+        </Link>
       </section>
     </div>
   );

@@ -37,7 +37,7 @@ export default function Home() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
             >
-              <span className="bg-gold/20 text-gold px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest mb-6 inline-block border border-gold/20">Impact Since 2008</span>
+              <span className="bg-gold/20 text-gold px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest mb-6 inline-block border border-gold/20">Impact Since 2020</span>
               <h1 className="text-5xl md:text-6xl font-extrabold leading-tight mb-6 tracking-tight">
                 Empowering Growth, <br/>Building <span className="text-lemon italic">Resilience</span>.
               </h1>

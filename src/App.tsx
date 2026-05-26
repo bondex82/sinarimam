@@ -23,8 +23,8 @@ import type { User } from 'firebase/auth';
 // Pages
 import Home from './pages/Home';
 import Services from './pages/Services';
-import Contact from './pages/Contact';
 import About from './pages/About';
+import Board from './pages/Board';
 import Projects from './pages/Projects';
 import ProjectDetail from './pages/ProjectDetail';
 import Events from './pages/Events';
@@ -35,6 +35,7 @@ import NewsArticle from './pages/NewsArticle';
 import Volunteer from './pages/Volunteer';
 import DataCollection from './pages/DataCollection';
 import Admin from './pages/Admin';
+import Contact from './pages/Contact';
 
 function Layout({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -53,6 +54,7 @@ function Layout({ children }: { children: React.ReactNode }) {
     <>
       <Link to="/" className={`${location.pathname === '/' ? 'text-ngo-blue' : ''} hover:text-ngo-blue transition-colors`}>Overview</Link>
       <Link to="/about" className={`${location.pathname === '/about' ? 'text-ngo-blue' : ''} hover:text-ngo-blue transition-colors`}>Our Story</Link>
+      <Link to="/board" className={`${location.pathname === '/board' ? 'text-ngo-blue' : ''} hover:text-ngo-blue transition-colors`}>Board</Link>
       <Link to="/services" className={`${location.pathname === '/services' ? 'text-ngo-blue' : ''} hover:text-ngo-blue transition-colors`}>Services</Link>
       <Link to="/projects" className={`${location.pathname === '/projects' ? 'text-ngo-blue' : ''} hover:text-ngo-blue transition-colors`}>Projects</Link>
       <Link to="/news" className={`${location.pathname === '/news' ? 'text-ngo-blue' : ''} hover:text-ngo-blue transition-colors`}>News</Link>
@@ -178,8 +180,8 @@ function Layout({ children }: { children: React.ReactNode }) {
             <footer className="mt-16 pt-8 border-t border-slate-200 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-slate-400 font-medium">
               <div className="flex gap-6">
                 <span>© 2024 Sinarimam Foundation</span>
-                <span>Active since 2008</span>
-                <span>support@heartland.ngo</span>
+                <span>Active since 2020</span>
+                <span>support@sinarimamfoundation.org.ng</span>
               </div>
               <div className="flex items-center gap-2 px-3 py-1 bg-white rounded-full shadow-sm border border-slate-100">
                 <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
@@ -201,6 +203,7 @@ export default function App() {
           <Route path="/" element={<Home />} />
           <Route path="/services" element={<Services />} />
           <Route path="/about" element={<About />} />
+          <Route path="/board" element={<Board />} />
           <Route path="/projects" element={<Projects />} />
           <Route path="/projects/:id" element={<ProjectDetail />} />
           <Route path="/events" element={<Events />} />
