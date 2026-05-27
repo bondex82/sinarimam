@@ -6,7 +6,7 @@ interface BoardMember {
   id: string;
   name: string;
   role: string;
-  position: 'Chairman' | 'Executive' | 'Director' | 'Advisor';
+  position: string;
   image: string;
   bio: string;
   linkedin?: string;
@@ -35,7 +35,7 @@ const boardMembers: BoardMember[] = [
   },
   {
     id: "m3",
-    name: "Barr. Jacob P. Emmanuel",
+    name: "Jacob P. Emmanuel",
     role: "Legal Practitioner/Writer",
     position: "Member BOT",
     image: "https://i.ibb.co/r2L68rQc/Whats-App-Image-2026-05-02-at-5-27-35-PM.jpg",
@@ -57,7 +57,7 @@ const boardMembers: BoardMember[] = [
     role: "Legal Practitioner/Fashionista",
     position: "Member BOT",
     image: "https://i.ibb.co/0pzHC59r/Whats-App-Image-2026-05-02-at-5-27-35-PM-2.jpg",
-    bio: "Sadigat Gang brings advanced environmental modeling and digital tracking technologies into Sinarimam's regional initiatives. His mapping methodologies allow real-time analysis of water well distribution and medical supply points.",
+    bio: "Sadigat Gang brings advanced environmental modeling and digital tracking technologies into Sinarimam's regional initiatives. Her methodologies allow real-time analysis of projects which leads to a sounding success of each outreach.",
     linkedin: "https://linkedin.com"
   },
   {
@@ -123,7 +123,7 @@ export default function Board() {
           <div className="lg:col-span-8 space-y-6">
             <div className="space-y-2">
               <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-gold text-ngo-blue rounded-full text-xs font-black uppercase tracking-wider">
-                <Shield size={12} /> Board Chairperson
+                <Shield size={12} /> Board Chairman
               </span>
               <h2 id="chairman_name" className="text-3xl md:text-4xl font-extrabold tracking-tight">{boardMembers[0].name}</h2>
               <p className="text-lemon font-bold text-lg">{boardMembers[0].role}</p>
@@ -155,6 +155,8 @@ export default function Board() {
               {boardMembers[0].email && (
                 <a 
                   href={`mailto:${boardMembers[0].email}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="p-3 bg-white/10 text-white rounded-full hover:bg-white/20 hover:scale-105 transition-all text-sm"
                   title="Contact Board Chair"
                 >
@@ -232,6 +234,8 @@ export default function Board() {
                   {member.email && (
                     <a 
                       href={`mailto:${member.email}`} 
+                      target="_blank"
+                      rel="noopener noreferrer"
                       className="p-2 bg-slate-50 text-slate-400 hover:text-ngo-blue hover:bg-ngo-blue/10 rounded-full transition-colors"
                       id={`email_${member.id}`}
                     >
@@ -309,6 +313,8 @@ export default function Board() {
                     {selectedMember.email && (
                       <a 
                         href={`mailto:${selectedMember.email}`} 
+                        target="_blank"
+                        rel="noopener noreferrer"
                         className="px-4 py-2.5 bg-slate-50 hover:bg-gold hover:text-ngo-blue text-slate-600 rounded-xl text-xs font-bold transition-all flex items-center gap-2"
                       >
                         <Mail size={14} /> Email Office

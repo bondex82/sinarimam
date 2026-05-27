@@ -8,14 +8,16 @@ import {
   Calendar, 
   ShieldCheck, 
   Share2,
-  Heart
+  Heart,
+  Image as ImageIcon
 } from 'lucide-react';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 
 export default function ProjectDetail() {
   const { id } = useParams<{ id: string }>();
   const [project, setProject] = useState<any>(null);
+  const [galleryItems, setGalleryItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -26,9 +28,14 @@ export default function ProjectDetail() {
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
           setProject({ id: docSnap.id, ...docSnap.data() });
+          
+          // Fetch associated gallery items
+          const q = query(collection(db, 'gallery'), where('projectId', '==', id));
+          const gallerySnap = await getDocs(q);
+          setGalleryItems(gallerySnap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
         }
       } catch (err) {
-        console.error('Error fetching project:', err);
+        console.error('Error fetching project details/gallery:', err);
       } finally {
         setLoading(false);
       }
@@ -58,7 +65,7 @@ export default function ProjectDetail() {
   const progress = project.targetAmount ? Math.min(Math.round((project.raisedAmount / project.targetAmount) * 100), 100) : null;
 
   return (
-    <div className="max-w-5xl mx-auto space-y-12 pb-20">
+    <div className="max-w-5xl mx-auto space-y-12 pb-20 animate-fade-in">
       <Link to="/projects" className="inline-flex items-center gap-2 text-slate-400 hover:text-ngo-blue font-black uppercase tracking-widest text-[10px] transition-colors group">
         <ChevronLeft size={14} className="group-hover:-translate-x-1 transition-transform" /> All initiatives
       </Link>
@@ -100,7 +107,7 @@ export default function ProjectDetail() {
                      className="h-full bg-gold shadow-[0_0_20px_rgba(212,175,55,0.4)]"
                    />
                 </div>
-                <button className="w-full py-5 bg-ngo-blue text-white rounded-2xl font-black shadow-xl shadow-ngo-blue/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3">
+                <button className="w-full py-5 bg-ngo-blue text-white rounded-2xl font-black shadow-xl shadow-ngo-blue/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3 cursor-pointer">
                    <Heart size={20} className="text-lemon fill-lemon" /> Support This Cause
                 </button>
              </div>
@@ -110,7 +117,7 @@ export default function ProjectDetail() {
         <div className="relative">
            <div className="aspect-[4/5] rounded-[60px] overflow-hidden shadow-2xl relative z-10">
               {project.imageUrl ? (
-                <img src={project.imageUrl} alt={project.title} className="w-full h-full object-cover" />
+                <img src={project.imageUrl} alt={project.title} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
               ) : (
                 <div className="w-full h-full bg-slate-100 flex items-center justify-center text-slate-300">
                    <Target size={80} />
@@ -139,6 +146,36 @@ export default function ProjectDetail() {
            </div>
          ))}
       </div>
+
+      {galleryItems.length > 0 && (
+         <div className="space-y-6 pt-12 animate-fade-in">
+            <div className="flex border-b border-slate-100 pb-4">
+               <div>
+                  <h3 className="text-2xl font-black text-ngo-blue">Project Gallery Highlights</h3>
+                  <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1">Authentic visual moments from this initiative</p>
+               </div>
+            </div>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+               {galleryItems.map((item) => (
+                 <div key={item.id} className="relative group rounded-[32px] overflow-hidden bg-slate-100 shadow-sm hover:shadow-xl transition-all aspect-video cursor-zoom-in">
+                    <img 
+                      src={item.url} 
+                      alt={item.title} 
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
+                      referrerPolicy="no-referrer"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-ngo-blue/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity p-4 flex flex-col justify-end">
+                       <span className="text-[9px] font-black text-lemon uppercase tracking-widest bg-white/10 px-2.5 py-0.5 rounded-full w-fit mb-1 border border-white/15 backdrop-blur-xs">
+                          {item.type}
+                       </span>
+                       <h4 className="text-white font-bold text-sm leading-tight">{item.title}</h4>
+                    </div>
+                 </div>
+               ))}
+            </div>
+         </div>
+      )}
 
       <div className="p-12 md:p-20 bg-ngo-blue rounded-[64px] text-white relative overflow-hidden text-center space-y-8">
          <div className="absolute top-0 left-0 w-96 h-96 bg-lemon/10 rounded-full -translate-x-1/2 -translate-y-1/2 blur-3xl" />

@@ -56,13 +56,24 @@ export default function About() {
           </div>
         </div>
         <div className="aspect-square bg-ngo-blue rounded-[50px] relative overflow-hidden flex items-center justify-center text-lemon">
-           {/* Placeholder for history image */}
-           <History size={120} strokeWidth={1} className="opacity-10 absolute" />
-           <div className="w-64 h-64 border-4 border-lemon/20 rounded-full flex items-center justify-center">
-              <div className="w-48 h-48 border-4 border-gold/20 rounded-full flex items-center justify-center">
-                 <div className="w-32 h-32 bg-lemon rounded-full shadow-2xl"></div>
-              </div>
-           </div>
+           {info?.logo ? (
+              <img 
+                src={info.logo} 
+                alt="Sinarimam Foundation Logo" 
+                className="w-full h-full object-cover animate-scale-in filter drop-shadow-[0_4px_12px_rgba(0,0,0,0.1)]"
+                referrerPolicy="no-referrer"
+              />
+           ) : (
+              <>
+                 {/* Placeholder for history image */}
+                 <History size={120} strokeWidth={1} className="opacity-10 absolute" />
+                 <div className="w-64 h-64 border-4 border-lemon/20 rounded-full flex items-center justify-center">
+                    <div className="w-48 h-48 border-4 border-gold/20 rounded-full flex items-center justify-center">
+                       <div className="w-32 h-32 bg-lemon rounded-full shadow-2xl"></div>
+                    </div>
+                 </div>
+              </>
+           )}
         </div>
       </div>
 

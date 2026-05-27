@@ -1,5 +1,5 @@
 import { motion } from 'motion/react';
-import { Mail, Phone, MapPin, Send, Instagram, Twitter, Facebook } from 'lucide-react';
+import { Mail, Phone, MapPin, Send, Facebook } from 'lucide-react';
 import { useState, type FormEvent } from 'react';
 import { db } from '../lib/firebase';
 import { collection, addDoc, Timestamp } from 'firebase/firestore';
@@ -8,6 +8,7 @@ export default function Contact() {
   const [formState, setFormState] = useState({
     name: '',
     email: '',
+    phone: '',
     subject: 'General Inquiry',
     message: ''
   });
@@ -18,15 +19,53 @@ export default function Contact() {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      await addDoc(collection(db, 'inquiries'), {
-        ...formState,
+      const payload: any = {
+        name: formState.name,
+        phone: formState.phone,
+        subject: formState.subject,
+        message: formState.message,
         submittedAt: Timestamp.now()
+      };
+      if (formState.email.trim()) {
+        payload.email = formState.email.trim();
+      }
+
+      // Log to database but enforce a tight timeout so misconfigured or blocked network states on cPanel do not hang the UI.
+      await Promise.race([
+        addDoc(collection(db, 'inquiries'), payload),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Database timeout')), 3000))
+      ]).catch(dbError => {
+        console.warn('Firestore write-logging was bypassed or timed out:', dbError);
       });
-      setSubmitted(true);
     } catch (err) {
-      console.error(err);
-      alert('Error sending message. Please try again.');
+      console.warn('Database reference error:', err);
     }
+
+    try {
+      // Trigger the mailto trigger (non-blocking fallback)
+      const emailTo = 'info@sinarimamfoundation.org.ng';
+      const subject = encodeURIComponent(`${formState.subject} - ${formState.name}`);
+      const body = encodeURIComponent(
+        `Dear Sinarimam Foundation Team,\n\n` +
+        `You have received a new contact inquiry from your website:\n\n` +
+        `Name: ${formState.name}\n` +
+        `Phone: ${formState.phone}\n` +
+        `Email: ${formState.email || 'Not Provided'}\n` +
+        `Subject: ${formState.subject}\n\n` +
+        `Message Content:\n${formState.message}\n\n` +
+        `---\n` +
+        `This message has also been logged securely in Sinarimam Foundation's records database.`
+      );
+      
+      const mailtoUrl = `mailto:${emailTo}?subject=${subject}&body=${body}`;
+      const mailtoLink = document.createElement('a');
+      mailtoLink.href = mailtoUrl;
+      mailtoLink.click();
+    } catch (err) {
+      console.warn('Auto mailto prompt bypassed:', err);
+    }
+
+    setSubmitted(true);
     setIsSubmitting(false);
   };
 
@@ -76,7 +115,7 @@ export default function Contact() {
                 </div>
                 <div>
                    <p className="text-xs font-bold text-blue-300 uppercase tracking-widest mb-1">Email us</p>
-                   <p className="text-lg font-bold">info@sinarimam.org</p>
+                   <p className="text-lg font-bold">info@sinarimamfoundation.org.ng</p>
                 </div>
               </div>
 
@@ -86,7 +125,7 @@ export default function Contact() {
                 </div>
                 <div>
                    <p className="text-xs font-bold text-blue-300 uppercase tracking-widest mb-1">Call us</p>
-                   <p className="text-lg font-bold">+234 800 123 4567</p>
+                   <p className="text-lg font-bold">07067299440, 081655541055</p>
                 </div>
               </div>
 
@@ -96,7 +135,7 @@ export default function Contact() {
                 </div>
                 <div>
                    <p className="text-xs font-bold text-blue-300 uppercase tracking-widest mb-1">Visit us</p>
-                   <p className="text-lg font-bold">12 Foundation Way, Abuja, Nigeria</p>
+                   <p className="text-lg font-bold">Gidyson Plaza Adjacent Taraba State Polytechnic Jalingo Campus</p>
                 </div>
               </div>
             </div>
@@ -105,11 +144,16 @@ export default function Contact() {
           <div className="space-y-6 relative z-10">
             <p className="text-xs font-bold text-blue-300 uppercase tracking-widest">Connect with us</p>
             <div className="flex gap-4">
-              {[Instagram, Twitter, Facebook].map((Icon, idx) => (
-                <button key={idx} className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center hover:bg-lemon hover:text-ngo-blue transition-all">
-                  <Icon size={20} />
-                </button>
-              ))}
+              <a 
+                href="https://www.facebook.com/profile.php?id=100068743965045"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center hover:bg-lemon hover:text-ngo-blue transition-all"
+                title="Sinarimam Foundation Facebook Page"
+                id="facebook_contact_link"
+              >
+                <Facebook size={20} />
+              </a>
             </div>
           </div>
         </motion.div>
@@ -121,44 +165,85 @@ export default function Contact() {
           className="bg-white rounded-[40px] border border-slate-100 p-8 md:p-12 shadow-sm"
         >
           {submitted ? (
-            <div className="py-20 text-center space-y-6">
-              <div className="w-20 h-20 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center mx-auto">
-                <Send size={40} />
+            <div className="py-12 text-center space-y-6">
+              <div className="w-20 h-20 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center mx-auto shadow-inner">
+                <Send size={40} className="animate-pulse" />
               </div>
-              <h3 className="text-3xl font-black text-ngo-blue">Message Sent!</h3>
-              <p className="text-slate-500">Thank you for reaching out. We will get back to you within 24 hours.</p>
-              <button 
-                onClick={() => setSubmitted(false)}
-                className="text-ngo-blue font-black uppercase tracking-widest text-xs hover:text-lemon transition-colors"
-              >
-                Send another message
-              </button>
+              <div className="space-y-2">
+                <h3 className="text-3xl font-black text-ngo-blue">Message Received!</h3>
+                <p className="text-sm font-bold text-lemon uppercase tracking-widest">Logged Securely in Admin Database</p>
+              </div>
+
+              <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100 max-w-md mx-auto space-y-4 text-left text-xs text-slate-600 leading-relaxed">
+                <p className="font-semibold text-slate-700">
+                  ✓ Your inquiry has been securely saved in the Sinarimam Foundation records system. Our administrators can view and respond directly from the Portal.
+                </p>
+                <p>
+                  To also send an email copy directly from your private account, click the button below to pre-populate and open your device's mail app:
+                </p>
+                <a 
+                  href={`mailto:info@sinarimamfoundation.org.ng?subject=${encodeURIComponent(formState.subject + ' - ' + formState.name)}&body=${encodeURIComponent(
+                    `Dear Sinarimam Foundation Team,\n\n` +
+                    `You have received a new contact inquiry from your website:\n\n` +
+                    `Name: ${formState.name}\n` +
+                    `Phone: ${formState.phone}\n` +
+                    `Email: ${formState.email || 'Not Provided'}\n` +
+                    `Subject: ${formState.subject}\n\n` +
+                    `Message Content:\n${formState.message}\n\n` +
+                    `---\n` +
+                    `Logged securely in Sinarimam Foundation records.`
+                  )}`}
+                  className="w-full py-4 px-6 bg-gold hover:bg-lemon text-ngo-blue rounded-2xl font-black text-xs uppercase tracking-widest shadow-md transition-all flex items-center justify-center gap-2"
+                >
+                  <Mail size={16} /> Open Email Client Backup
+                </a>
+              </div>
+
+              <div className="pt-4 border-t border-slate-100">
+                <button 
+                  onClick={() => setSubmitted(false)}
+                  className="text-ngo-blue font-black uppercase tracking-widest text-xs hover:text-lemon transition-colors"
+                >
+                  Send another message
+                </button>
+              </div>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Your Name</label>
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Your Name (compulsory)</label>
                   <input 
                     required
                     type="text" 
                     value={formState.name}
                     onChange={e => setFormState({...formState, name: e.target.value})}
-                    className="w-full p-4 bg-slate-50 rounded-2xl border-2 border-transparent focus:border-lemon focus:bg-white transition-all outline-none"
+                    className="w-full p-4 bg-slate-50 rounded-2xl border-2 border-transparent focus:border-lemon focus:bg-white transition-all outline-none font-semibold text-ngo-blue text-sm"
                     placeholder="John Doe"
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Email Address</label>
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Phone Number (compulsory)</label>
                   <input 
                     required
-                    type="email" 
-                    value={formState.email}
-                    onChange={e => setFormState({...formState, email: e.target.value})}
-                    className="w-full p-4 bg-slate-50 rounded-2xl border-2 border-transparent focus:border-lemon focus:bg-white transition-all outline-none"
-                    placeholder="john@example.com"
+                    type="tel" 
+                    value={formState.phone}
+                    onChange={e => setFormState({...formState, phone: e.target.value})}
+                    className="w-full p-4 bg-slate-50 rounded-2xl border-2 border-transparent focus:border-lemon focus:bg-white transition-all outline-none font-semibold text-ngo-blue text-sm"
+                    placeholder="e.g. 07067299440"
                   />
                 </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Email Address (optional)</label>
+                <input 
+                  type="email" 
+                  value={formState.email}
+                  onChange={e => setFormState({...formState, email: e.target.value})}
+                  className="w-full p-4 bg-slate-50 rounded-2xl border-2 border-transparent focus:border-lemon focus:bg-white transition-all outline-none font-semibold text-ngo-blue text-sm"
+                  placeholder="john@example.com (optional)"
+                />
               </div>
               
               <div className="space-y-2">

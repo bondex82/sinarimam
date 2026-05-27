@@ -19,6 +19,7 @@ import {
 import { auth } from './lib/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import type { User } from 'firebase/auth';
+import { getAboutInfo } from './services/cmsService';
 
 // Pages
 import Home from './pages/Home';
@@ -40,6 +41,7 @@ import Contact from './pages/Contact';
 function Layout({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [logoUrl, setLogoUrl] = useState<string>('');
   const location = useLocation();
 
   useEffect(() => {
@@ -48,6 +50,14 @@ function Layout({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     return onAuthStateChanged(auth, (u) => setUser(u));
+  }, []);
+
+  useEffect(() => {
+    getAboutInfo().then((info: any) => {
+      if (info && info.logo) {
+        setLogoUrl(info.logo);
+      }
+    });
   }, []);
 
   const NavLinks = () => (
@@ -70,7 +80,11 @@ function Layout({ children }: { children: React.ReactNode }) {
       <nav className="h-20 bg-white border-b border-slate-100 px-8 flex items-center justify-between sticky top-0 z-50">
         <div className="flex items-center gap-3">
           <Link to="/" className="flex items-center gap-2 group">
-            <div className="w-10 h-10 bg-ngo-blue rounded-lg flex items-center justify-center text-lemon font-bold text-xl group-hover:rotate-12 transition-transform shadow-lg shadow-ngo-blue/20">S</div>
+            {logoUrl ? (
+              <img src={logoUrl} className="w-10 h-10 object-contain rounded-lg group-hover:scale-105 transition-transform" alt="Sinarimam Foundation Logo" referrerPolicy="no-referrer" />
+            ) : (
+              <div className="w-10 h-10 bg-ngo-blue rounded-lg flex items-center justify-center text-lemon font-bold text-xl group-hover:rotate-12 transition-transform shadow-lg shadow-ngo-blue/20">S</div>
+            )}
             <span className="text-xl font-bold tracking-tight text-ngo-blue uppercase">Sinarimam <span className="text-gold">Foundation</span></span>
           </Link>
         </div>

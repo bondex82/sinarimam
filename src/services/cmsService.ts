@@ -189,3 +189,16 @@ export const submitSurveyResponse = async (data: any) => {
     handleFirestoreError(e, 'create', 'surveys');
   }
 };
+
+export const getInquiries = async () => {
+  try {
+    const q = query(collection(db, 'inquiries'), orderBy('submittedAt', 'desc'));
+    const snap = await getDocs(q);
+    return snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  } catch (e) {
+    console.warn('Fetching inquiries ordered failed, trying fallback:', e);
+    const snap = await getDocs(collection(db, 'inquiries'));
+    return snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  }
+};
+

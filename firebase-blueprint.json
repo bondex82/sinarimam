@@ -141,6 +141,19 @@
         "createdAt": { "type": "string", "format": "date-time" }
       },
       "required": ["projectId", "name"]
+    },
+    "inquiry": {
+      "title": "Contact Inquiry",
+      "description": "Messages submitted on the contact form",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "subject": { "type": "string" },
+        "message": { "type": "string" },
+        "submittedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "email", "subject", "message"]
     }
   },
   "firestore": {
@@ -175,6 +188,10 @@
     "beneficiaries/{beneficiaryId}": {
       "schema": "beneficiary",
       "description": "Records of project beneficiaries"
+    },
+    "inquiries/{inquiryId}": {
+      "schema": "inquiry",
+      "description": "Collection of visitor contact inquiries"
     }
   }
 }

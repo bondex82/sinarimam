@@ -11,7 +11,11 @@ service cloud.firestore {
     function isValidId(id) { return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); }
     function isAdmin() { return isSignedIn() && (
       exists(/databases/$(database)/documents/admins/$(request.auth.uid)) ||
-      request.auth.token.email == 'bondimadigitalworld@gmail.com'
+      request.auth.token.email in [
+        'info@sinarimamfoundation.org.ng',
+        'bondimadigitalworld@gmail.com'
+        // Add or change admin emails easily below (comma separated)
+      ]
     ); }
     function incoming() { return request.resource.data; }
     function existing() { return resource.data; }
@@ -48,7 +52,7 @@ service cloud.firestore {
 
     function isValidGalleryItem(data) {
       return data.keys().hasAll(['url', 'type']) &&
-             data.url is string && data.url.size() <= 1000 &&
+             data.url is string && data.url.size() <= 2000000 &&
              data.type in ['photo', 'video'];
     }
 
@@ -74,6 +78,16 @@ service cloud.firestore {
              (!('healthBenefits' in data) || data.healthBenefits is list) &&
              (!('clothing' in data) || data.clothing is list) &&
              (!('accessories' in data) || data.accessories is list);
+    }
+
+    function isValidInquiry(data) {
+      return data.keys().hasAll(['name', 'phone', 'subject', 'message', 'submittedAt']) &&
+             data.name is string && data.name.size() <= 200 &&
+             data.phone is string && data.phone.size() <= 50 &&
+             (!('email' in data) || (data.email is string && data.email.size() <= 200)) &&
+             data.subject is string && data.subject.size() <= 200 &&
+             data.message is string && data.message.size() <= 10000 &&
+             data.submittedAt is timestamp;
     }
 
     // Rules
@@ -136,6 +150,13 @@ service cloud.firestore {
       allow get: if isAdmin();
       allow create: if isValidId(surveyId) && isValidSurvey(incoming());
       allow update: if isAdmin() && isValidId(surveyId) && isValidSurvey(incoming());
+      allow delete: if isAdmin();
+    }
+
+    match /inquiries/{inquiryId} {
+      allow list: if isAdmin();
+      allow get: if isAdmin();
+      allow create: if isValidInquiry(incoming());
       allow delete: if isAdmin();
     }
   }
