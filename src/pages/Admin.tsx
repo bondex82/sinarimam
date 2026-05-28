@@ -715,6 +715,52 @@ export default function Admin() {
   >([]);
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [founderPhotoFile, setFounderPhotoFile] = useState<File | null>(null);
+  const [certificateFile, setCertificateFile] = useState<File | null>(null);
+
+  const applyEventTemplate = (templateName: string) => {
+    const today = new Date();
+    today.setDate(today.getDate() + 14); // 2 weeks in future
+    const dateStr = today.toISOString().split("T")[0];
+
+    const templates: Record<string, any> = {
+      outreach: {
+        title: "Community Outreach & Resource Distribution",
+        location: "Karu Primary School Field Center, Abuja",
+        description: "Join us in our upcoming community outreach campaign. We are distributing educational text/exercise books, writing materials, sanitary and wellness products, as well as basic nutritional supplies to underserved families.",
+        time: "10:00 AM - 3:00 PM",
+        date: dateStr,
+      },
+      workshop: {
+        title: "Youth Vocational & Digital Skills Workshop",
+        location: "Foundation Learning Hub, Abuja",
+        description: "A practical learning session dedicated to empowering local youths with vocational skills and basic digital literacy. Mentors will be teaching basic computer operations, local business administration, and financial hygiene.",
+        time: "09:00 AM - 1:00 PM",
+        date: dateStr,
+      },
+      health: {
+        title: "Primary Healthcare & Pediatric Support Camp",
+        location: "Sinarimam Community Clinic, Abuja",
+        description: "A comprehensive free health screening and consultation camp for local children and vulnerable families, staffed by certified volunteer medical officers. Offering basic pediatric checkups, nutritional supplements, and hygiene education.",
+        time: "08:00 AM - 2:00 PM",
+        date: dateStr,
+      },
+      gala: {
+        title: "Sinarimam Annual Gala & Project Exhibition",
+        location: "Ambassador Hall, Abuja",
+        description: "An elegant evening celebrating our field accomplishments and listing upcoming milestones. Connecting with our amazing partners, board members, and volunteers. Featuring guest speeches, cultural performance, and project showcase.",
+        time: "6:00 PM - 10:00 PM",
+        date: dateStr,
+      },
+    };
+
+    const selected = templates[templateName];
+    if (selected) {
+      setNewItem({
+        ...newItem,
+        ...selected,
+      });
+    }
+  };
 
   const removeFileFromQueue = (index: number) => {
     setSelectedFiles((prev) => prev.filter((_, i) => i !== index));
@@ -898,6 +944,25 @@ export default function Admin() {
             const url = await uploadFile(compressedFounderFile);
             finalSiteInfo.founderPhoto = url;
             setFounderPhotoFile(null);
+          })(),
+        );
+      }
+
+      if (certificateFile) {
+        setSiteInfoStatus("Compressing foundation certificate...");
+        const compressedCertFile = await compressImage(
+          certificateFile,
+          1200,
+          1200,
+          0.85,
+        );
+
+        uploadPromises.push(
+          (async () => {
+            setSiteInfoStatus("Uploading foundation certificate...");
+            const url = await uploadFile(compressedCertFile);
+            finalSiteInfo.certificateImage = url;
+            setCertificateFile(null);
           })(),
         );
       }
@@ -1095,6 +1160,22 @@ export default function Admin() {
       if (col === "projects") {
         if (!payload.status) payload.status = "Active";
         if (!payload.raisedAmount) payload.raisedAmount = 0;
+      }
+
+      if (col === "events") {
+        if (!payload.time) payload.time = "10:00 AM - 2:00 PM";
+        if (payload.date && typeof payload.date === "string") {
+          const dateParts = payload.date.split("-");
+          if (dateParts.length === 3) {
+            const year = parseInt(dateParts[0], 10);
+            const month = parseInt(dateParts[1], 10) - 1; // 0-indexed month
+            const day = parseInt(dateParts[2], 10);
+            const dateObj = new Date(year, month, day, 12, 0, 0); // Noon
+            payload.date = Timestamp.fromDate(dateObj);
+          } else {
+            payload.date = Timestamp.fromDate(new Date(payload.date));
+          }
+        }
       }
 
       if (editingItem) {
@@ -1672,6 +1753,44 @@ export default function Admin() {
 
                   {activeTab === "Events" && (
                     <div className="space-y-4">
+                      {/* One-Click Presets / Templates Hub */}
+                      <div className="bg-amber-500/5 p-4 rounded-3xl border border-gold/15 space-y-2">
+                        <span className="text-[10px] font-black tracking-widest text-gold uppercase block mb-1">
+                          ⚡ ONE-CLICK EVENT BOOSTER (PRE-FILL TEMPLATES)
+                        </span>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                          <button
+                            type="button"
+                            onClick={() => applyEventTemplate("outreach")}
+                            className="bg-white hover:bg-slate-50 text-ngo-blue text-[10px] font-black py-2.5 px-2.5 rounded-xl border border-slate-200/80 shadow-sm text-center shrink-0 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer"
+                          >
+                            🎁 Outreach Drive
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => applyEventTemplate("workshop")}
+                            className="bg-white hover:bg-slate-50 text-ngo-blue text-[10px] font-black py-2.5 px-2.5 rounded-xl border border-slate-200/80 shadow-sm text-center shrink-0 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer"
+                          >
+                            🎓 Skill Workshop
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => applyEventTemplate("health")}
+                            className="bg-white hover:bg-slate-50 text-ngo-blue text-[10px] font-black py-2.5 px-2.5 rounded-xl border border-slate-200/80 shadow-sm text-center shrink-0 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer"
+                          >
+                            🩺 Medical Camp
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => applyEventTemplate("gala")}
+                            className="bg-white hover:bg-slate-50 text-ngo-blue text-[10px] font-black py-2.5 px-2.5 rounded-xl border border-slate-200/80 shadow-sm text-center shrink-0 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer"
+                          >
+                            🎗️ Benefit Gala
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Event Title */}
                       <div className="space-y-2">
                         <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">
                           Event Title
@@ -1687,28 +1806,121 @@ export default function Admin() {
                           className="w-full p-4 bg-slate-50 rounded-2xl border-2 border-transparent focus:border-lemon focus:bg-white outline-none transition-all placeholder:text-slate-300"
                         />
                       </div>
-                      <div className="space-y-2">
-                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">
-                          Date
-                        </label>
-                        <input
-                          required
-                          type="date"
-                          value={newItem.date || ""}
-                          onChange={(e) =>
-                            setNewItem({ ...newItem, date: e.target.value })
-                          }
-                          className="w-full p-4 bg-slate-50 rounded-2xl border-2 border-transparent focus:border-lemon focus:bg-white outline-none transition-all"
-                        />
+
+                      {/* Date with helper buttons */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">
+                            Date
+                          </label>
+                          <input
+                            required
+                            type="date"
+                            value={newItem.date || ""}
+                            onChange={(e) =>
+                              setNewItem({ ...newItem, date: e.target.value })
+                            }
+                            className="w-full p-4 bg-slate-50 rounded-2xl border-2 border-transparent focus:border-lemon focus:bg-white outline-none transition-all"
+                          />
+                          {/* Date Helpers */}
+                          <div className="flex flex-wrap gap-1.5 pt-0.5">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const tom = new Date();
+                                tom.setDate(tom.getDate() + 1);
+                                setNewItem({ ...newItem, date: tom.toISOString().split("T")[0] });
+                              }}
+                              className="text-[9px] font-bold text-slate-500 bg-slate-100 hover:bg-slate-200/70 py-1 px-2 rounded-lg transition-all"
+                            >
+                              Tomorrow
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const nextSat = new Date();
+                                nextSat.setDate(nextSat.getDate() + ((6 - nextSat.getDay() + 7) % 7 || 7));
+                                setNewItem({ ...newItem, date: nextSat.toISOString().split("T")[0] });
+                              }}
+                              className="text-[9px] font-bold text-slate-500 bg-slate-100 hover:bg-slate-200/70 py-1 px-2 rounded-lg transition-all"
+                            >
+                              Next Saturday
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const fut = new Date();
+                                fut.setDate(fut.getDate() + 14);
+                                setNewItem({ ...newItem, date: fut.toISOString().split("T")[0] });
+                              }}
+                              className="text-[9px] font-bold text-slate-500 bg-slate-100 hover:bg-slate-200/70 py-1 px-2 rounded-lg transition-all"
+                            >
+                              In 2 Weeks
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Custom Time Range Field with preset suggestion buttons */}
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">
+                            Event Time Range
+                          </label>
+                          <input
+                            type="text"
+                            required
+                            placeholder="e.g. 10:00 AM - 2:00 PM"
+                            value={newItem.time || ""}
+                            onChange={(e) =>
+                              setNewItem({ ...newItem, time: e.target.value })
+                            }
+                            className="w-full p-4 bg-slate-50 rounded-2xl border-2 border-transparent focus:border-lemon focus:bg-white outline-none transition-all placeholder:text-slate-300"
+                          />
+                          {/* Time Presets */}
+                          <div className="flex flex-wrap gap-1.5 pt-0.5">
+                            <button
+                              type="button"
+                              onClick={() => setNewItem({ ...newItem, time: "10:00 AM - 2:00 PM" })}
+                              className="text-[9px] font-bold text-slate-500 bg-slate-100 hover:bg-slate-200/70 py-1 px-2 rounded-lg transition-all"
+                            >
+                              10 AM - 2 PM
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setNewItem({ ...newItem, time: "09:00 AM - 1:00 PM" })}
+                              className="text-[9px] font-bold text-slate-500 bg-slate-100 hover:bg-slate-200/70 py-1 px-2 rounded-lg transition-all"
+                            >
+                              9 AM - 1 PM
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setNewItem({ ...newItem, time: "08:00 AM - 2:00 PM" })}
+                              className="text-[9px] font-bold text-slate-500 bg-slate-100 hover:bg-slate-200/70 py-1 px-2 rounded-lg transition-all"
+                            >
+                              8 AM - 2 PM
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setNewItem({ ...newItem, time: "06:00 PM - 10:00 PM" })}
+                              className="text-[9px] font-bold text-slate-500 bg-slate-100 hover:bg-slate-200/70 py-1 px-2 rounded-lg transition-all"
+                            >
+                              6 PM - 10 PM
+                            </button>
+                          </div>
+                        </div>
                       </div>
+
+                      {/* Location with indicator */}
                       <div className="space-y-2">
-                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">
-                          Location
+                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1 flex justify-between">
+                          <span>Location</span>
+                          <span className="text-[9px] font-black text-amber-800 lowercase">
+                            {newItem.location?.toLowerCase().includes("online") || newItem.location?.toLowerCase().includes("zoom") ? "🟢 auto-classified: online" : "🔵 auto-classified: in-person"}
+                          </span>
                         </label>
                         <input
                           required
                           type="text"
-                          placeholder="e.g. Main Hall, Abuja"
+                          placeholder="e.g. Main Hall, Abuja or Zoom Link"
                           value={newItem.location || ""}
                           onChange={(e) =>
                             setNewItem({ ...newItem, location: e.target.value })
@@ -1716,6 +1928,8 @@ export default function Admin() {
                           className="w-full p-4 bg-slate-50 rounded-2xl border-2 border-transparent focus:border-lemon focus:bg-white outline-none transition-all placeholder:text-slate-300"
                         />
                       </div>
+
+                      {/* Description */}
                       <div className="space-y-2">
                         <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">
                           Description
@@ -1733,6 +1947,8 @@ export default function Admin() {
                           className="w-full p-4 bg-slate-50 rounded-2xl border-2 border-transparent focus:border-lemon focus:bg-white h-32 resize-none outline-none transition-all placeholder:text-slate-300"
                         />
                       </div>
+
+                      {/* Event Image */}
                       <DragAndDropImageField
                         label="Event Image"
                         sublabel="Direct drag-and-drop or select supported"
@@ -1745,6 +1961,53 @@ export default function Admin() {
                           setNewItem({ ...newItem, imageUrl: url })
                         }
                       />
+
+                      {/* LIVE PREVIEW COMPONENT */}
+                      <div className="mt-6 border-t border-slate-100 pt-6 space-y-3">
+                        <div className="flex items-center gap-1 text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">
+                          <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-ping"></span> Live Real-Time Website Preview
+                        </div>
+
+                        <div className="bg-slate-50/50 rounded-[32px] p-6 border border-slate-100 flex items-center justify-center">
+                          <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-md w-full max-w-sm flex flex-col gap-5 relative overflow-hidden select-none pointer-events-none">
+                            <div className="absolute top-0 right-0 w-24 h-24 bg-gold/5 rounded-full -mr-12 -mt-12"></div>
+                            
+                            <div className="flex justify-between items-start">
+                              <div className="w-12 h-16 bg-ngo-blue rounded-xl flex flex-col items-center justify-center text-white font-black shadow-md shadow-ngo-blue/10">
+                                <span className="text-[8px] text-blue-200 uppercase opacity-75">
+                                  {(() => {
+                                    const d = newItem.date ? new Date(newItem.date) : new Date();
+                                    return d.toLocaleDateString('en-US', { month: 'short' });
+                                  })()}
+                                </span>
+                                <span className="text-xl tracking-tighter">
+                                  {(() => {
+                                    const d = newItem.date ? new Date(newItem.date) : new Date();
+                                    return d.getDate();
+                                  })()}
+                                </span>
+                              </div>
+                              <span className="bg-slate-50 text-slate-400 text-[8px] font-black px-3 py-1 rounded-full tracking-widest uppercase border border-slate-100">
+                                {newItem.location?.toLowerCase().includes('zoom') || newItem.location?.toLowerCase().includes('online') ? 'Online' : 'In-Person'}
+                              </span>
+                            </div>
+
+                            <div className="space-y-1.5">
+                              <h3 className="text-base font-black text-ngo-blue truncate">{newItem.title || "Untitled Preview Event"}</h3>
+                              <p className="text-slate-500 text-[10px] leading-relaxed line-clamp-2">{newItem.description || "Event description preview will populate here as you type..."}</p>
+                            </div>
+
+                            <div className="pt-3 border-t border-slate-50 flex justify-between text-[10px] font-bold text-slate-400">
+                              <div className="flex items-center gap-1">
+                                <span className="text-lemon">🕒</span> {newItem.time || '10:00 AM - 2:00 PM'}
+                              </div>
+                              <div className="flex items-center gap-1 max-w-[150px] truncate">
+                                <span className="text-gold">📍</span> {newItem.location || 'Location Pending'}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   )}
 
@@ -3271,6 +3534,22 @@ export default function Admin() {
                           siteInfo: {
                             ...data.siteInfo,
                             founderPhoto: url,
+                          },
+                        })
+                      }
+                    />
+                    <DragAndDropImageField
+                      label="Foundation Certificate"
+                      sublabel="Upload the official registration or incorporation seal"
+                      selectedFile={certificateFile}
+                      onFileSelect={(file) => setCertificateFile(file)}
+                      existingUrl={data.siteInfo?.certificateImage || ""}
+                      onUrlChange={(url) =>
+                        setData({
+                          ...data,
+                          siteInfo: {
+                            ...data.siteInfo,
+                            certificateImage: url,
                           },
                         })
                       }

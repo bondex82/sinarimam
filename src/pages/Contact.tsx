@@ -1,10 +1,12 @@
 import { motion } from 'motion/react';
 import { Mail, Phone, MapPin, Send, Facebook } from 'lucide-react';
-import { useState, type FormEvent } from 'react';
+import { useState, type FormEvent, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { db } from '../lib/firebase';
 import { collection, addDoc, Timestamp } from 'firebase/firestore';
 
 export default function Contact() {
+  const [searchParams] = useSearchParams();
   const [formState, setFormState] = useState({
     name: '',
     email: '',
@@ -12,6 +14,19 @@ export default function Contact() {
     subject: 'General Inquiry',
     message: ''
   });
+
+  // Prefill the form if search parameters are parsed
+  useEffect(() => {
+    const querySubject = searchParams.get('subject');
+    const queryMessage = searchParams.get('message');
+    if (querySubject || queryMessage) {
+      setFormState(prev => ({
+        ...prev,
+        subject: querySubject || prev.subject,
+        message: queryMessage || prev.message
+      }));
+    }
+  }, [searchParams]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
@@ -257,6 +272,9 @@ export default function Contact() {
                   <option>Partnership Proposal</option>
                   <option>Volunteer Interest</option>
                   <option>Sponsorship Opportunity</option>
+                  {!['General Inquiry', 'Partnership Proposal', 'Volunteer Interest', 'Sponsorship Opportunity'].includes(formState.subject) && (
+                    <option value={formState.subject}>{formState.subject}</option>
+                  )}
                 </select>
               </div>
 

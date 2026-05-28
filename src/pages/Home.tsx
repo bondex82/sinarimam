@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronRight, Heart, Calendar, Newspaper, Info, User } from 'lucide-react';
+import { ChevronRight, Heart, Calendar, Newspaper, Info, User, Award, ExternalLink, Download } from 'lucide-react';
 import { getProjects, getNews, getEvents, getAboutInfo } from '../services/cmsService';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 
 const heroImages = [
   "https://i.ibb.co/N6Rhd190/1774966869615.jpg",
@@ -16,6 +16,8 @@ export default function Home() {
   const [news, setNews] = useState<any[]>([]);
   const [events, setEvents] = useState<any[]>([]);
   const [about, setAbout] = useState<any>(null);
+  const [showCertificate, setShowCertificate] = useState(false);
+  const [certificateTab, setCertificateTab] = useState<'scanned' | 'digital'>('scanned');
 
   useEffect(() => {
     getProjects(2).then(setProjects);
@@ -88,6 +90,12 @@ export default function Home() {
              ))}
           </div>
         </div>
+
+        {/* RC Number Badge */}
+        <div className="absolute bottom-4 right-4 md:bottom-6 md:right-8 z-20 flex items-center gap-1.5 bg-white/10 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/15 text-[10px] md:text-xs font-semibold text-white/90 shadow-sm hover:bg-white/15 transition-all">
+          <Award size={13} className="text-gold" />
+          <span className="font-mono tracking-wider font-bold">CAC/IT/NO 148011</span>
+        </div>
       </header>
 
       {/* Founder's Welcome */}
@@ -107,18 +115,216 @@ export default function Home() {
       ) : (
         <section className="bg-white rounded-[64px] p-8 md:p-14 border border-slate-100 flex flex-col md:flex-row gap-12 items-center relative overflow-hidden">
            <div className="absolute top-0 right-0 w-64 h-64 bg-lemon/5 rounded-full blur-3xl opacity-50" />
-           <div className="w-full md:w-1/4 aspect-square md:aspect-[3/4] rounded-[48px] overflow-hidden bg-slate-100 relative group shadow-2xl shrink-0">
-              {about?.founderPhoto ? (
-                <img src={about.founderPhoto} alt={about.founderName} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-slate-300">
-                   <User size={80} />
-                </div>
-              )}
-              <div className="absolute bottom-6 left-6 right-6 p-4 bg-ngo-blue/40 backdrop-blur-md rounded-2xl border border-white/20">
-                 <p className="text-white font-black tracking-tight text-sm">{about?.founderName || 'Sarah Jenkins'}</p>
-                 <p className="text-white/60 text-[8px] font-bold uppercase tracking-widest">Foundation Founder</p>
+           <div className="flex flex-col items-center gap-4 w-full md:w-1/4 shrink-0">
+              <div className="w-full aspect-square md:aspect-[3/4] rounded-[48px] overflow-hidden bg-slate-100 relative group shadow-2xl">
+                 {about?.founderPhoto ? (
+                   <img src={about.founderPhoto} alt={about.founderName} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                 ) : (
+                   <div className="w-full h-full flex items-center justify-center text-slate-300">
+                      <User size={80} />
+                   </div>
+                 )}
+                 <div className="absolute bottom-6 left-6 right-6 p-4 bg-ngo-blue/40 backdrop-blur-md rounded-2xl border border-white/20">
+                    <p className="text-white font-black tracking-tight text-sm">{about?.founderName || 'Sarah Jenkins'}</p>
+                    <p className="text-white/60 text-[8px] font-bold uppercase tracking-widest">Foundation Founder</p>
+                 </div>
               </div>
+              <button 
+                onClick={() => {
+                  setCertificateTab(about?.certificateImage ? 'scanned' : 'digital');
+                  setShowCertificate(true);
+                }} 
+                className="flex items-center gap-2 text-xs font-black text-ngo-blue hover:text-gold transition-all py-3 px-6 rounded-full bg-slate-50 hover:bg-slate-100 border border-slate-100 hover:border-gold/20 shadow-sm shrink-0 cursor-pointer hover:scale-[1.02] active:scale-[0.98]"
+              >
+                 <Award size={14} className="text-gold" />
+                 <span>View Foundation Certificate</span>
+              </button>
+
+              <AnimatePresence>
+                {showCertificate && (
+                  <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                    <motion.div 
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      onClick={() => setShowCertificate(false)}
+                      className="absolute inset-0 bg-ngo-blue/60 backdrop-blur-sm"
+                    />
+                    <motion.div 
+                      initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                      animate={{ scale: 1, opacity: 1, y: 0 }}
+                      exit={{ scale: 0.9, opacity: 0, y: 20 }}
+                      className="bg-stone-50 rounded-[40px] w-full max-w-2xl p-6 md:p-8 shadow-2xl relative z-10 border-[16px] border-amber-900/10 overflow-hidden text-slate-800 flex flex-col"
+                    >
+                       {/* Tab Selector if certificate exists */}
+                       {about?.certificateImage && (
+                          <div className="flex justify-center gap-2 mb-6 bg-slate-200/50 p-1 rounded-full max-w-xs mx-auto border border-slate-200/80 shadow-inner relative z-20 shrink-0">
+                             <button
+                               onClick={() => setCertificateTab('scanned')}
+                               className={`px-5 py-2 rounded-full text-xs font-black transition-all cursor-pointer ${certificateTab === 'scanned' ? 'bg-ngo-blue text-white shadow' : 'text-slate-500 hover:text-ngo-blue'}`}
+                             >
+                               Scanned Document
+                             </button>
+                             <button
+                               onClick={() => setCertificateTab('digital')}
+                               className={`px-5 py-2 rounded-full text-xs font-black transition-all cursor-pointer ${certificateTab === 'digital' ? 'bg-ngo-blue text-white shadow' : 'text-slate-500 hover:text-ngo-blue'}`}
+                             >
+                               Digital Record
+                             </button>
+                          </div>
+                       )}
+
+                       {/* Scanned Document View */}
+                       {about?.certificateImage && certificateTab === 'scanned' ? (
+                          <div className="space-y-6 flex flex-col items-center flex-1 justify-center relative">
+                             {/* Background Watermark/Aesthetic Details */}
+                             <div className="absolute inset-0 opacity-[0.03] pointer-events-none flex items-center justify-center">
+                                <Award size={240} strokeWidth={1} className="text-amber-900" />
+                             </div>
+
+                             <div className="text-center">
+                                <h3 className="font-serif text-2xl text-amber-900 font-extrabold tracking-tight">
+                                   Official Incorporation Certificate
+                                </h3>
+                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">CAC Incorporated Trustee Seal</p>
+                             </div>
+
+                             {/* Image Container with Elegant framing */}
+                             <div className="w-full bg-white border-2 border-slate-100 p-3 rounded-3xl shadow-lg relative max-h-[50vh] overflow-hidden flex items-center justify-center group">
+                                <img 
+                                  src={about.certificateImage} 
+                                  alt="Official Sinarimam Foundation Certificate" 
+                                  className="max-h-[42vh] max-w-full object-contain rounded-xl select-none"
+                                  referrerPolicy="no-referrer"
+                                />
+                             </div>
+
+                             {/* Options / Action list */}
+                             <div className="flex gap-3 justify-center w-full z-10">
+                                <a 
+                                  href={about.certificateImage} 
+                                  target="_blank" 
+                                  rel="noopener noreferrer" 
+                                  className="flex items-center gap-2 px-5 py-2.5 bg-slate-100 text-slate-700 hover:text-ngo-blue hover:bg-slate-200 rounded-full font-black text-[11px] transition-all cursor-pointer hover:scale-[1.02] active:scale-[0.98]"
+                                >
+                                   <ExternalLink size={13} />
+                                   <span>Open in New Window</span>
+                                </a>
+                                <a 
+                                  href={about.certificateImage} 
+                                  download="Sinarimam_Foundation_Certificate.jpg"
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="flex items-center gap-2 px-5 py-2.5 bg-gold/10 text-amber-800 hover:bg-gold/20 rounded-full font-black text-[11px] transition-all cursor-pointer hover:scale-[1.02] active:scale-[0.98]"
+                                >
+                                   <Download size={13} />
+                                   <span>Download Document</span>
+                                </a>
+                             </div>
+                          </div>
+                       ) : (
+                          /* Digital Record / Fallback template view */
+                          <div className="relative">
+                             {/* Certificate Security Watermark/Background Design */}
+                             <div className="absolute inset-0 opacity-[0.03] pointer-events-none flex items-center justify-center">
+                                <div className="w-[450px] h-[450px] border-[20px] border-amber-900 rounded-full flex items-center justify-center">
+                                   <Award size={180} strokeWidth={1} />
+                                </div>
+                             </div>
+
+                             {/* Certificate Content Container */}
+                             <div className="border-4 border-amber-900/15 p-5 md:p-8 rounded-3xl relative space-y-5 flex flex-col justify-center text-center">
+                                
+                                {/* Header */}
+                                <div className="space-y-1">
+                                   <div className="flex justify-center mb-2">
+                                      <div className="w-14 h-14 bg-amber-900/5 rounded-full flex items-center justify-center border border-amber-900/20 text-amber-800">
+                                         <Award size={30} />
+                                      </div>
+                                   </div>
+                                   <p className="text-[9px] font-black tracking-[0.3em] uppercase text-amber-800">Corporate Affairs Commission</p>
+                                   <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Federal Republic of Nigeria</p>
+                                </div>
+
+                                {/* Dividers */}
+                                <div className="w-20 h-0.5 bg-amber-900/20 mx-auto" />
+
+                                {/* Title */}
+                                <div className="space-y-0.5">
+                                   <h3 className="font-serif text-2xl md:text-3xl text-amber-900 font-extrabold tracking-tight">
+                                      Certificate of Incorporation
+                                   </h3>
+                                   <p className="text-[9px] font-black text-slate-500 tracking-wider">AS A REGISTERED INCORPORATED TRUSTEE</p>
+                                </div>
+
+                                {/* Certification Statement */}
+                                <div className="max-w-md mx-auto space-y-3">
+                                   <p className="text-xs text-slate-600 font-serif leading-relaxed">
+                                      This is to certify that the Registered Trustees of
+                                   </p>
+                                   <h4 className="text-base md:text-lg font-black text-ngo-blue uppercase tracking-tight py-1.5 border-b-2 border-dashed border-amber-950/20 max-w-sm mx-auto">
+                                      Sinarimam Foundation
+                                   </h4>
+                                   <p className="text-[10px] text-slate-500 leading-relaxed max-w-sm mx-auto">
+                                      has this day been duly registered as an Incorporated Trustee under part C of the Companies and Allied Matters Act, Cap C20 LFN 2004.
+                                   </p>
+                                </div>
+
+                                {/* Certificate ID / Stamp row */}
+                                <div className="grid grid-cols-3 gap-2 pt-3 items-center border-t border-amber-900/10 font-sans">
+                                   <div className="space-y-0.5 text-left">
+                                      <p className="text-[7px] font-black uppercase text-slate-400 tracking-wide">RC Number</p>
+                                      <p className="font-mono text-[10px] font-bold text-amber-900">RC/CAC/148920</p>
+                                   </div>
+
+                                   {/* Golden Seal */}
+                                   <div className="relative flex justify-center">
+                                      <div className="w-14 h-14 bg-amber-600/15 border-4 border-amber-600 rounded-full flex items-center justify-center relative rotate-12 shadow-sm">
+                                         <Award size={20} className="text-amber-700" />
+                                      </div>
+                                   </div>
+
+                                   <div className="space-y-0.5 text-right font-sans">
+                                      <p className="text-[7px] font-black uppercase text-slate-400 tracking-wide">Date Issued</p>
+                                      <p className="font-mono text-[10px] font-bold text-amber-900">15 Oct, 2020</p>
+                                   </div>
+                                </div>
+
+                                {/* Signatures */}
+                                <div className="grid grid-cols-2 gap-8 pt-3 text-xs">
+                                   <div className="space-y-1 bg-transparent">
+                                      <div className="h-5 flex items-end justify-center font-serif text-[11px] italic text-slate-700 select-none">
+                                         Dr. Sarah Jenkins
+                                      </div>
+                                      <div className="w-16 h-px bg-slate-300 mx-auto" />
+                                      <p className="text-[7px] font-black text-slate-400 uppercase tracking-widest">Founder & President</p>
+                                   </div>
+                                   <div className="space-y-1 bg-transparent">
+                                      <div className="h-5 flex items-end justify-center font-serif text-[11px] italic text-slate-700 select-none">
+                                         Shehu Aliyu
+                                      </div>
+                                      <div className="w-16 h-px bg-slate-300 mx-auto" />
+                                      <p className="text-[7px] font-black text-slate-400 uppercase tracking-widest">Registrar General</p>
+                                   </div>
+                                </div>
+
+                             </div>
+                          </div>
+                       )}
+
+                       {/* Close Button */}
+                       <div className="flex justify-center mt-6 shrink-0 z-20">
+                          <button 
+                            onClick={() => setShowCertificate(false)}
+                            className="px-8 py-3 bg-ngo-blue text-white rounded-full font-black text-xs hover:bg-gold transition-colors shadow-lg shadow-ngo-blue/10 cursor-pointer hover:scale-105 active:scale-95"
+                          >
+                            Close Certificate
+                          </button>
+                       </div>
+                    </motion.div>
+                  </div>
+                )}
+              </AnimatePresence>
            </div>
            <div className="flex-1 space-y-8">
               <div className="space-y-4">
@@ -247,10 +453,10 @@ export default function Home() {
                    <Link key={e.id || idx} to={`/events/${e.id}`} className="flex gap-4 group cursor-pointer transition-all">
                       <div className="flex-shrink-0 w-12 h-14 bg-slate-50 rounded-xl flex flex-col items-center justify-center border border-slate-100 group-hover:border-lemon transition-colors">
                          <span className="text-[10px] font-bold text-slate-400 uppercase">
-                           {e.date?.toDate ? new Date(e.date.toDate()).toLocaleDateString('en-US', { month: 'short' }) : 'MAY'}
+                           {e.date?.toDate ? new Date(e.date.toDate()).toLocaleDateString('en-US', { month: 'short' }) : (e.date ? new Date(e.date).toLocaleDateString('en-US', { month: 'short' }) : 'MAY')}
                          </span>
                          <span className="text-lg font-black text-ngo-blue">
-                           {e.date?.toDate ? new Date(e.date.toDate()).getDate() : '24'}
+                           {e.date?.toDate ? new Date(e.date.toDate()).getDate() : (e.date ? new Date(e.date).getDate() : '24')}
                          </span>
                       </div>
                       <div>

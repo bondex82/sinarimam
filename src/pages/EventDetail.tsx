@@ -46,21 +46,21 @@ export default function EventDetail() {
   const shareLinks = [
     { 
       name: 'X (Twitter)', 
-      icon: <Share2 size={20} />, 
+      icon: <Share2 size={18} />, 
       url: `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareTitle)}&url=${encodeURIComponent(shareUrl)}`,
-      color: 'bg-black text-white'
+      color: 'bg-black text-white hover:bg-black/90'
     },
     { 
       name: 'Facebook', 
-      icon: <Users size={20} />, 
+      icon: <span className="font-extrabold text-lg text-white">f</span>, 
       url: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`,
-      color: 'bg-[#1877F2] text-white'
+      color: 'bg-[#1877F2] text-white hover:bg-[#1877F2]/90'
     },
     { 
       name: 'WhatsApp', 
-      icon: <Bell size={20} />, 
+      icon: <span className="font-bold text-sm text-white">WA</span>, 
       url: `https://wa.me/?text=${encodeURIComponent(shareTitle + ' ' + shareUrl)}`,
-      color: 'bg-[#25D366] text-white'
+      color: 'bg-[#25D366] text-white hover:bg-[#25D366]/90'
     }
   ];
 
@@ -148,7 +148,7 @@ export default function EventDetail() {
                     </div>
                     <div>
                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Time</p>
-                       <p className="font-bold text-ngo-blue">10:00 AM - 2:00 PM</p>
+                       <p className="font-bold text-ngo-blue">{event.time || "10:00 AM - 2:00 PM"}</p>
                     </div>
                  </div>
 
@@ -178,19 +178,19 @@ export default function EventDetail() {
               {/* Share Modal */}
               <AnimatePresence>
                 {showShareModal && (
-                  <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                  <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
                     <motion.div 
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
                       onClick={() => setShowShareModal(false)}
-                      className="absolute inset-0 bg-ngo-blue/60 backdrop-blur-sm"
+                      className="absolute inset-0 bg-ngo-blue/60 backdrop-blur-sm shadow-2xl"
                     />
                     <motion.div 
                       initial={{ scale: 0.9, opacity: 0, y: 20 }}
                       animate={{ scale: 1, opacity: 1, y: 0 }}
                       exit={{ scale: 0.9, opacity: 0, y: 20 }}
-                      className="bg-white rounded-[40px] w-full max-w-sm p-8 shadow-2xl relative z-10 space-y-8"
+                      className="bg-white rounded-[40px] w-full max-w-sm p-8 shadow-2xl relative z-10 space-y-8 text-ngo-blue text-left"
                     >
                        <div className="text-center space-y-2">
                           <h3 className="text-2xl font-black text-ngo-blue">Spread the Word</h3>
@@ -204,9 +204,9 @@ export default function EventDetail() {
                                href={link.url}
                                target="_blank"
                                rel="noopener noreferrer"
-                               className={`flex items-center gap-4 p-4 rounded-2xl font-bold transition-all hover:scale-[1.02] active:scale-[0.98] ${link.color}`}
+                               className="flex items-center gap-4 p-4 rounded-xl font-bold transition-all hover:scale-[1.02] active:scale-[0.98] bg-slate-50 hover:bg-slate-100 border border-slate-100 text-ngo-blue text-left"
                              >
-                                <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
+                                <div className={`w-10 h-10 ${link.color.split(' ')[0]} rounded-xl flex items-center justify-center shadow-sm`}>
                                    {link.icon}
                                 </div>
                                 Share on {link.name}
@@ -215,7 +215,7 @@ export default function EventDetail() {
                           
                           <button 
                             onClick={copyToClipboard}
-                            className="flex items-center gap-4 p-4 rounded-2xl font-bold bg-slate-50 text-ngo-blue border border-slate-100 hover:bg-slate-100 transition-all group"
+                            className="flex items-center gap-4 p-4 rounded-xl font-bold bg-slate-50 text-ngo-blue border border-slate-100 hover:bg-slate-100 transition-all group w-full cursor-pointer text-left"
                           >
                              <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform">
                                 <Share2 size={20} />
@@ -226,7 +226,7 @@ export default function EventDetail() {
 
                        <button 
                          onClick={() => setShowShareModal(false)}
-                         className="w-full py-4 text-slate-400 font-bold hover:text-red-500 transition-colors"
+                         className="w-full py-4 text-slate-400 font-bold hover:text-red-500 transition-colors cursor-pointer text-center"
                        >
                          Close
                        </button>

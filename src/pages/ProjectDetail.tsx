@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { 
   ChevronLeft, 
   Target, 
@@ -9,7 +9,8 @@ import {
   ShieldCheck, 
   Share2,
   Heart,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Users
 } from 'lucide-react';
 import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../lib/firebase';
@@ -19,6 +20,8 @@ export default function ProjectDetail() {
   const [project, setProject] = useState<any>(null);
   const [galleryItems, setGalleryItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [copied, setCopied] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
 
   useEffect(() => {
     const fetchProject = async () => {
@@ -61,6 +64,15 @@ export default function ProjectDetail() {
       </div>
     );
   }
+
+  const shareUrl = typeof window !== 'undefined' ? window.location.href : '';
+  const shareTitle = project?.title ? `${project.title} - Sinarimam Foundation` : 'Check out this project by Sinarimam Foundation';
+
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(shareUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   const progress = project.targetAmount ? Math.min(Math.round((project.raisedAmount / project.targetAmount) * 100), 100) : null;
 
@@ -107,9 +119,12 @@ export default function ProjectDetail() {
                      className="h-full bg-gold shadow-[0_0_20px_rgba(212,175,55,0.4)]"
                    />
                 </div>
-                <button className="w-full py-5 bg-ngo-blue text-white rounded-2xl font-black shadow-xl shadow-ngo-blue/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3 cursor-pointer">
+                <Link 
+                  to={`/contact?subject=${encodeURIComponent(`Support Cause - ${project.title}`)}&message=${encodeURIComponent(`Dear Sinarimam Foundation Team,\n\nI am reaching out because I would like to support the initiative: "${project.title}".\n\nPlease let me know how I can contribute toward this fundraising cause.\n\nWarm regards,\n`)}`}
+                  className="w-full py-5 bg-ngo-blue text-white rounded-2xl font-black shadow-xl shadow-ngo-blue/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3 cursor-pointer text-center"
+                >
                    <Heart size={20} className="text-lemon fill-lemon" /> Support This Cause
-                </button>
+                </Link>
              </div>
            )}
         </div>
@@ -177,18 +192,108 @@ export default function ProjectDetail() {
          </div>
       )}
 
-      <div className="p-12 md:p-20 bg-ngo-blue rounded-[64px] text-white relative overflow-hidden text-center space-y-8">
-         <div className="absolute top-0 left-0 w-96 h-96 bg-lemon/10 rounded-full -translate-x-1/2 -translate-y-1/2 blur-3xl" />
+      <div className="p-12 md:p-20 bg-ngo-blue rounded-[64px] text-white relative overflow-hidden text-center space-y-8 z-10">
+         <div className="absolute top-0 left-0 w-96 h-96 bg-lemon/10 rounded-full -translate-x-1/2 -translate-y-1/2 blur-3xl pointer-events-none" />
          <h2 className="text-4xl md:text-5xl font-black max-w-3xl mx-auto tracking-tight relative z-10">
            Ready to make an <span className="text-lemon italic">impact</span> with this project?
          </h2>
-         <div className="flex flex-col sm:flex-row gap-6 justify-center relative z-10">
-            <button className="bg-lemon text-ngo-blue px-12 py-6 rounded-full font-black text-sm shadow-2xl shadow-lemon/30 hover:scale-105 transition-all">Partner With Us</button>
-            <button className="bg-white/10 backdrop-blur-xl text-white border border-white/20 px-12 py-6 rounded-full font-black text-sm hover:bg-white/20 transition-all flex items-center gap-3">
+         <div className="flex flex-col sm:flex-row gap-6 justify-center relative z-20">
+            <Link 
+              to={`/contact?subject=${encodeURIComponent(`Partnership - ${project.title}`)}&message=${encodeURIComponent(`Dear Sinarimam Foundation Team,\n\nI am interested in partnering with you on the dynamic initiative: "${project.title}".\n\nPlease let me know how we can collaborate and make a greater impact together.\n\nWarm regards,\n`)}`}
+              className="bg-lemon text-ngo-blue px-12 py-6 rounded-full font-black text-sm border-2 border-transparent hover:border-lemon hover:bg-white hover:text-ngo-blue transition-all active:scale-95 shadow-md text-center inline-flex items-center justify-center cursor-pointer relative z-30"
+              onClick={() => console.log('Partner button clicked')}
+            >
+              Partner With Us
+            </Link>
+            <button 
+              onClick={() => {
+                console.log('Share Project button clicked');
+                setShowShareModal(true);
+              }} 
+              className="bg-white/10 backdrop-blur-xl text-white border border-white/20 px-12 py-6 rounded-full font-black text-sm hover:bg-white/20 transition-all flex items-center justify-center gap-3 cursor-pointer relative z-30"
+            >
                <Share2 size={20} /> Share Project
             </button>
          </div>
       </div>
+
+      <AnimatePresence>
+        {showShareModal && (
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowShareModal(false)}
+              className="absolute inset-0 bg-ngo-blue/60 backdrop-blur-sm shadow-2xl"
+            />
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              className="bg-white rounded-[40px] w-full max-w-sm p-8 shadow-2xl relative z-10 space-y-8 text-ngo-blue text-left"
+            >
+               <div className="text-center space-y-2">
+                  <h3 className="text-2xl font-black text-ngo-blue">Spread the Word</h3>
+                  <p className="text-slate-500 text-sm">Share this project with your network to help our cause.</p>
+               </div>
+
+               <div className="grid grid-cols-1 gap-3">
+                  {[
+                    { 
+                      name: 'X (Twitter)', 
+                      icon: <Share2 size={18} />, 
+                      url: `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareTitle)}&url=${encodeURIComponent(shareUrl)}`,
+                      color: 'bg-black text-white hover:bg-black/90'
+                    },
+                    { 
+                      name: 'Facebook', 
+                      icon: <span className="font-extrabold text-lg text-white">f</span>, 
+                      url: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`,
+                      color: 'bg-[#1877F2] text-white hover:bg-[#1877F2]/90'
+                    },
+                    { 
+                      name: 'WhatsApp', 
+                      icon: <span className="font-bold text-sm text-white">WA</span>, 
+                      url: `https://wa.me/?text=${encodeURIComponent(shareTitle + ' ' + shareUrl)}`,
+                      color: 'bg-[#25D366] text-white hover:bg-[#25D366]/90'
+                    }
+                  ].map((link) => (
+                     <a 
+                       key={link.name}
+                       href={link.url}
+                       target="_blank"
+                       rel="noopener noreferrer"
+                       className="flex items-center gap-4 p-4 rounded-xl font-bold transition-all hover:scale-[1.02] active:scale-[0.98] bg-slate-50 hover:bg-slate-100 border border-slate-100 text-ngo-blue"
+                     >
+                        <div className={`w-10 h-10 ${link.color.split(' ')[0]} rounded-xl flex items-center justify-center shadow-sm`}>
+                           {link.icon}
+                        </div>
+                        Share on {link.name}
+                     </a>
+                  ))}
+                  
+                  <button 
+                    onClick={copyToClipboard}
+                    className="flex items-center gap-4 p-4 rounded-xl font-bold bg-slate-50 text-ngo-blue border border-slate-100 hover:bg-slate-100 transition-all group w-full cursor-pointer text-left"
+                  >
+                     <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform">
+                        <Share2 size={20} />
+                     </div>
+                     {copied ? 'Link Copied!' : 'Copy Project Link'}
+                  </button>
+               </div>
+
+               <button 
+                 onClick={() => setShowShareModal(false)}
+                 className="w-full py-2 text-slate-400 font-bold hover:text-red-500 transition-colors cursor-pointer text-center"
+               >
+                 Close
+               </button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

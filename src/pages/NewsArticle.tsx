@@ -1,13 +1,15 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { motion } from 'motion/react';
-import { Newspaper, Calendar, ChevronLeft, Share2, Clock } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
+import { Newspaper, Calendar, ChevronLeft, Share2, Clock, Check } from 'lucide-react';
 import { getNewsItem } from '../services/cmsService';
 
 export default function NewsArticle() {
   const { id } = useParams<{ id: string }>();
   const [article, setArticle] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -40,6 +42,36 @@ export default function NewsArticle() {
       </div>
     );
   }
+
+  const shareUrl = typeof window !== 'undefined' ? window.location.href : '';
+  const shareTitle = article?.title ? `${article.title} - Sinarimam Foundation` : 'Check out this update by Sinarimam Foundation';
+
+  const shareLinks = [
+    { 
+      name: 'X (Twitter)', 
+      icon: <Share2 size={18} />, 
+      url: `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareTitle)}&url=${encodeURIComponent(shareUrl)}`,
+      color: 'bg-black text-white hover:bg-black/90'
+    },
+    { 
+      name: 'Facebook', 
+      icon: <span className="font-extrabold text-lg text-white">f</span>, 
+      url: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`,
+      color: 'bg-[#1877F2] text-white hover:bg-[#1877F2]/90'
+    },
+    { 
+      name: 'WhatsApp', 
+      icon: <span className="font-bold text-sm text-white">WA</span>, 
+      url: `https://wa.me/?text=${encodeURIComponent(shareTitle + ' ' + shareUrl)}`,
+      color: 'bg-[#25D366] text-white hover:bg-[#25D366]/90'
+    }
+  ];
+
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(shareUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   return (
     <div className="max-w-4xl mx-auto space-y-12 pb-20">
@@ -79,7 +111,12 @@ export default function NewsArticle() {
 
       <div className="grid grid-cols-1 md:grid-cols-12 gap-12">
         <aside className="md:col-span-1 flex md:flex-col gap-6 sticky top-32 h-fit">
-          <button className="w-12 h-12 rounded-2xl bg-white border border-slate-100 flex items-center justify-center text-slate-400 hover:text-ngo-blue hover:border-ngo-blue transition-all shadow-sm">
+          <button 
+            type="button"
+            onClick={() => setShowShareModal(true)}
+            className="w-12 h-12 rounded-2xl bg-white border border-slate-100 flex items-center justify-center text-slate-400 hover:text-ngo-blue hover:border-ngo-blue transition-all shadow-sm cursor-pointer hover:scale-105 active:scale-95"
+            title="Share Article"
+          >
             <Share2 size={20} />
           </button>
         </aside>
@@ -90,20 +127,69 @@ export default function NewsArticle() {
                <p key={i} className="mb-6">{para}</p>
              ))}
           </div>
-
-          <div className="p-12 bg-ngo-blue rounded-[40px] text-white relative overflow-hidden mt-20">
-             <div className="absolute top-0 right-0 w-64 h-64 bg-lemon/10 rounded-full translate-x-1/2 -translate-y-1/2 blur-3xl" />
-             <div className="relative z-10 space-y-6">
-                <h3 className="text-3xl font-black tracking-tight">Stay updated with our mission.</h3>
-                <p className="text-blue-200">Join our newsletter to receive the latest updates directly in your inbox.</p>
-                <div className="flex flex-col sm:flex-row gap-4 max-w-md">
-                   <input type="email" placeholder="Your email address" className="flex-1 bg-white/10 border border-white/20 rounded-2xl px-6 py-4 outline-none focus:bg-white/20 transition-all placeholder:text-blue-300" />
-                   <button className="bg-lemon text-ngo-blue px-8 py-4 rounded-2xl font-black text-sm uppercase tracking-widest hover:scale-105 transition-transform whitespace-nowrap">Subscribe</button>
-                </div>
-             </div>
-          </div>
         </article>
       </div>
+
+      <AnimatePresence>
+        {showShareModal && (
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowShareModal(false)}
+              className="absolute inset-0 bg-ngo-blue/60 backdrop-blur-sm shadow-2xl"
+            />
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              className="bg-white rounded-[40px] w-full max-w-sm p-8 shadow-2xl relative z-10 space-y-8 text-ngo-blue text-left"
+            >
+               <div className="text-center space-y-2">
+                  <h3 className="text-2xl font-black text-ngo-blue">Spread the Word</h3>
+                  <p className="text-slate-500 text-sm">Share this news update with your network to raise awareness.</p>
+               </div>
+
+               <div className="grid grid-cols-1 gap-3">
+                  {shareLinks.map((link) => (
+                     <a 
+                       key={link.name}
+                       href={link.url}
+                       target="_blank"
+                       rel="noopener noreferrer"
+                       className="flex items-center gap-4 p-4 rounded-xl font-bold transition-all hover:scale-[1.02] active:scale-[0.98] bg-slate-50 hover:bg-slate-100 border border-slate-100 text-ngo-blue text-left"
+                     >
+                        <div className={`w-10 h-10 ${link.color.split(' ')[0]} rounded-xl flex items-center justify-center shadow-sm`}>
+                           {link.icon}
+                        </div>
+                        Share on {link.name}
+                     </a>
+                  ))}
+                  
+                  <button 
+                    type="button"
+                    onClick={copyToClipboard}
+                    className="flex items-center gap-4 p-4 rounded-xl font-bold bg-slate-50 text-ngo-blue border border-slate-100 hover:bg-slate-100 transition-all group w-full cursor-pointer text-left"
+                  >
+                     <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform">
+                        {copied ? <Check size={18} className="text-green-500" /> : <Share2 size={18} />}
+                     </div>
+                     {copied ? 'Copied Link!' : 'Copy Article Link'}
+                  </button>
+               </div>
+
+               <button 
+                 type="button"
+                 onClick={() => setShowShareModal(false)}
+                 className="w-full py-4 text-slate-400 font-bold hover:text-red-500 transition-colors cursor-pointer text-center"
+               >
+                 Close
+               </button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
