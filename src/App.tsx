@@ -19,7 +19,7 @@ import {
 import { auth } from './lib/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import type { User } from 'firebase/auth';
-import { getAboutInfo } from './services/cmsService';
+import { getAboutInfo, getProjects } from './services/cmsService';
 
 // Pages
 import Home from './pages/Home';
@@ -52,6 +52,8 @@ function Layout({ children }: { children: React.ReactNode }) {
     return onAuthStateChanged(auth, (u) => setUser(u));
   }, []);
 
+  const [projectCount, setProjectCount] = useState<number>(12);
+
   useEffect(() => {
     getAboutInfo().then((info: any) => {
       if (info && info.logo) {
@@ -59,6 +61,16 @@ function Layout({ children }: { children: React.ReactNode }) {
       }
     });
   }, []);
+
+  useEffect(() => {
+    getProjects()
+      .then((projs) => {
+        if (projs && Array.isArray(projs)) {
+          setProjectCount(projs.length);
+        }
+      })
+      .catch((err) => console.error("Error setting project count:", err));
+  }, [location.pathname]);
 
   const NavLinks = () => (
     <>
@@ -164,11 +176,11 @@ function Layout({ children }: { children: React.ReactNode }) {
 
             <div className="mt-auto p-5 bg-white/5 rounded-[24px] border border-white/10 backdrop-blur-sm">
               <p className="text-xs text-blue-200 font-medium mb-1">Active Projects</p>
-              <p className="text-3xl font-bold text-lemon">12</p>
+              <p className="text-3xl font-bold text-lemon">{projectCount}</p>
               <div className="w-full bg-white/10 h-1.5 rounded-full mt-3 overflow-hidden">
                 <motion.div 
                   initial={{ width: 0 }}
-                  animate={{ width: '75%' }}
+                  animate={{ width: `${Math.min(100, (projectCount / 10) * 100)}%` }}
                   className="bg-lemon h-full" 
                 />
               </div>
@@ -193,7 +205,7 @@ function Layout({ children }: { children: React.ReactNode }) {
             
             <footer className="mt-16 pt-8 border-t border-slate-200 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-slate-400 font-medium">
               <div className="flex gap-6">
-                <span>© 2024 Sinarimam Foundation</span>
+                <span>© 2026 Sinarimam Foundation</span>
                 <span>Active since 2020</span>
                 <span>support@sinarimamfoundation.org.ng</span>
               </div>

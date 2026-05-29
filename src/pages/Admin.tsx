@@ -1569,7 +1569,7 @@ export default function Admin() {
     {
       name: "Projects",
       icon: <CheckCircle size={18} />,
-      count: data.projects.length,
+      count: data.projects?.length || 0,
     },
     {
       name: "Impact Tracking",
@@ -3614,6 +3614,76 @@ export default function Admin() {
                             siteInfo: {
                               ...data.siteInfo,
                               contactPhone: e.target.value,
+                            },
+                          })
+                        }
+                        className="w-full p-4 bg-slate-50 rounded-2xl border-2 border-transparent focus:border-lemon focus:bg-white outline-none transition-all text-sm placeholder:text-slate-300"
+                      />
+                    </div>
+                  </div>
+
+                  <h4 className="font-bold text-ngo-blue border-b border-slate-100 pb-2 flex items-center gap-2 mt-8">
+                    <Briefcase size={18} className="text-gold" /> Volunteer Recruitment Controls
+                  </h4>
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">
+                        Volunteer Recruitment Status
+                      </label>
+                      <select
+                        value={data.siteInfo?.volunteerRecruitmentOpen ?? "true"}
+                        onChange={(e) =>
+                          setData({
+                            ...data,
+                            siteInfo: {
+                              ...data.siteInfo,
+                              volunteerRecruitmentOpen: e.target.value,
+                            },
+                          })
+                        }
+                        className="w-full p-4 bg-slate-50 rounded-2xl border-2 border-transparent focus:border-lemon focus:bg-white outline-none transition-all text-sm font-bold text-ngo-blue"
+                      >
+                        <option value="true">Open (Recruiting new volunteers)</option>
+                        <option value="false">Closed (Applications suspended)</option>
+                      </select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">
+                        Orientation Date Text
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. May 30, 2026"
+                        value={data.siteInfo?.volunteerOrientationDate || ""}
+                        onChange={(e) =>
+                          setData({
+                            ...data,
+                            siteInfo: {
+                              ...data.siteInfo,
+                              volunteerOrientationDate: e.target.value,
+                            },
+                          })
+                        }
+                        className="w-full p-4 bg-slate-50 rounded-2xl border-2 border-transparent focus:border-lemon focus:bg-white outline-none transition-all text-sm placeholder:text-slate-300"
+                      />
+                      <p className="text-[10px] text-slate-400 mt-1">Leave blank or type custom status if volunteers are not currently recruited.</p>
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">
+                        Orientation Venue / Details
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. Main Lobby • 10:00 AM"
+                        value={data.siteInfo?.volunteerOrientationDetails || ""}
+                        onChange={(e) =>
+                          setData({
+                            ...data,
+                            siteInfo: {
+                              ...data.siteInfo,
+                              volunteerOrientationDetails: e.target.value,
                             },
                           })
                         }

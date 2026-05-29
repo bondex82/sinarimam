@@ -46,11 +46,11 @@ export default function About() {
           </p>
           <div className="flex gap-4">
             <div className="flex-1 p-6 bg-slate-50 rounded-3xl border border-slate-100">
-              <p className="text-3xl font-black text-ngo-blue">16+</p>
+              <p className="text-3xl font-black text-ngo-blue">8+</p>
               <p className="text-xs text-slate-400 uppercase font-bold tracking-widest mt-1">Years Active</p>
             </div>
             <div className="flex-1 p-6 bg-slate-50 rounded-3xl border border-slate-100">
-              <p className="text-3xl font-black text-ngo-blue">500k</p>
+              <p className="text-3xl font-black text-ngo-blue">10k</p>
               <p className="text-xs text-slate-400 uppercase font-bold tracking-widest mt-1">Lives Touched</p>
             </div>
           </div>

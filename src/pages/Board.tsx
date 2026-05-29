@@ -62,7 +62,7 @@ const boardMembers: BoardMember[] = [
   },
   {
     id: "m6",
-    name: "Silas Dauda Diadia",
+    name: "Silas Audu Diadia",
     role: "Banker/Techie",
     position: "Member BOT",
     image: "https://i.ibb.co/FqKq8pMW/Whats-App-Image-2026-05-02-at-5-30-30-PM.jpg",

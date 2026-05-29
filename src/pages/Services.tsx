@@ -1,5 +1,6 @@
+import { useState } from 'react';
 import { motion } from 'motion/react';
-import { Heart, BookOpen, ShieldCheck, ChevronRight } from 'lucide-react';
+import { Heart, BookOpen, ShieldCheck, ChevronRight, Copy, CheckCheck } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const services = [
@@ -30,6 +31,14 @@ const services = [
 ];
 
 export default function Services() {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopyAccount = () => {
+    navigator.clipboard.writeText("1017400274");
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   return (
     <div className="space-y-24 pb-20">
       <header className="max-w-4xl mx-auto text-center space-y-8">
@@ -140,6 +149,39 @@ export default function Services() {
         <div className="flex flex-col sm:flex-row gap-6 justify-center relative z-10">
           <Link to="/contact" className="bg-lemon text-ngo-blue px-12 py-6 rounded-full font-black text-sm shadow-2xl shadow-lemon/30 hover:scale-105 active:scale-95 transition-all">Volunteer With Us</Link>
           <Link to="/contact" className="bg-white/10 backdrop-blur-xl text-white border border-white/20 px-12 py-6 rounded-full font-black text-sm hover:bg-white/20 transition-all">Partner With Us</Link>
+        </div>
+
+        {/* Beautiful Glass Donate Board under buttons */}
+        <div className="max-w-md mx-auto bg-white/10 backdrop-blur-xl border border-white/20 rounded-[32px] p-6 text-left relative z-10 space-y-4 shadow-xl">
+          <div className="flex items-center gap-2.5">
+            <span className="text-[10px] font-black tracking-widest text-blue-200 uppercase">⚡ DIRECT SUPPORT BOARD</span>
+          </div>
+          <p className="text-xs text-blue-100 leading-relaxed">
+            Support our ongoing health, education, and social protection programs.
+          </p>
+          <div className="bg-white/5 rounded-2xl p-4 border border-white/10 space-y-3">
+            <div className="flex justify-between items-center text-xs">
+              <span className="text-blue-200">Bank Name</span>
+              <span className="font-extrabold text-lemon">Zenith Bank</span>
+            </div>
+            <div className="flex justify-between items-center text-xs">
+              <span className="text-blue-200">Account Name</span>
+              <span className="font-extrabold text-white">Sinarimam Foundation</span>
+            </div>
+            <div className="pt-2 border-t border-white/10 flex justify-between items-center">
+              <div>
+                <span className="text-[10px] text-blue-300 block mb-0.5">Account Number</span>
+                <span className="font-mono text-base font-black text-white tracking-wider">1017400274</span>
+              </div>
+              <button 
+                type="button"
+                onClick={handleCopyAccount}
+                className={`px-3.5 py-2 rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-1.5 transition-all cursor-pointer ${copied ? 'bg-green-500 text-white' : 'bg-white/10 text-white hover:bg-lemon hover:text-ngo-blue'}`}
+              >
+                {copied ? <CheckCheck size={14} /> : <Copy size={14} />} {copied ? 'Copied' : 'Copy'}
+              </button>
+            </div>
+          </div>
         </div>
       </section>
     </div>

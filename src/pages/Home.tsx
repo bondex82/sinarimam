@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronRight, Heart, Calendar, Newspaper, Info, User, Award, ExternalLink, Download } from 'lucide-react';
+import { ChevronRight, Heart, Calendar, Newspaper, Info, User, Award, ExternalLink, Download, Copy, CheckCheck } from 'lucide-react';
 import { getProjects, getNews, getEvents, getAboutInfo } from '../services/cmsService';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -18,6 +18,13 @@ export default function Home() {
   const [about, setAbout] = useState<any>(null);
   const [showCertificate, setShowCertificate] = useState(false);
   const [certificateTab, setCertificateTab] = useState<'scanned' | 'digital'>('scanned');
+  const [copied, setCopied] = useState(false);
+
+  const handleCopyAccount = () => {
+    navigator.clipboard.writeText("1017400274");
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   useEffect(() => {
     getProjects(2).then(setProjects);
@@ -466,6 +473,57 @@ export default function Home() {
                    </Link>
                  ))}
                  {events.length === 0 && <p className="text-xs text-slate-400 italic">No upcoming events scheduled.</p>}
+              </div>
+           </section>
+
+           {/* Support / Donate Board */}
+           <section className="bg-gradient-to-br from-white to-slate-50 rounded-[32px] p-8 border border-slate-100 shadow-md relative overflow-hidden mb-8">
+              <div className="absolute top-0 right-0 w-24 h-24 bg-gold/5 rounded-full -mr-8 -mt-8"></div>
+              <div className="flex items-center gap-3 mb-4">
+                 <div className="w-10 h-10 bg-gold/15 rounded-xl flex items-center justify-center text-gold">
+                    <Heart size={20} className="fill-gold" />
+                 </div>
+                 <div>
+                    <h3 className="text-lg font-black text-ngo-blue tracking-tight">Direct Support Board</h3>
+                    <p className="text-[10px] text-slate-400 uppercase tracking-widest font-bold">Partner With Us</p>
+                 </div>
+              </div>
+              <p className="text-xs text-slate-500 leading-relaxed mb-6">
+                Your generous direct transfers go 100% towards purchasing medicine kits, textbooks, and skill kits for communities we serve.
+              </p>
+
+              <div className="bg-white rounded-2xl p-5 border border-slate-100 space-y-4 shadow-sm">
+                 <div className="space-y-1">
+                    <span className="text-[9px] font-black tracking-widest text-slate-400 uppercase">Bank Name</span>
+                    <p className="text-sm font-black text-ngo-blue">Zenith Bank</p>
+                 </div>
+                 
+                 <div className="space-y-1">
+                    <span className="text-[9px] font-black tracking-widest text-slate-400 uppercase">Account Name</span>
+                    <p className="text-sm font-black text-ngo-blue">Sinarimam Foundation</p>
+                 </div>
+
+                 <div className="space-y-1.5 pt-1 border-t border-slate-50 flex items-center justify-between">
+                    <div>
+                       <span className="text-[9px] font-black tracking-widest text-slate-400 uppercase">Account Number</span>
+                       <p className="text-lg font-mono font-black text-ngo-blue tracking-wider">1017400274</p>
+                    </div>
+                    <button 
+                       type="button"
+                       onClick={handleCopyAccount}
+                       className={`px-4 py-2.5 rounded-xl font-black text-xs uppercase tracking-wide flex items-center gap-1.5 transition-all cursor-pointer ${copied ? 'bg-green-500 text-white shadow-md shadow-green-500/20' : 'bg-slate-100 text-slate-600 hover:bg-lemon hover:text-ngo-blue'}`}
+                    >
+                       {copied ? (
+                          <>
+                             <CheckCheck size={14} /> Copied!
+                          </>
+                       ) : (
+                          <>
+                             <Copy size={14} /> Copy
+                          </>
+                       )}
+                    </button>
+                 </div>
               </div>
            </section>
 

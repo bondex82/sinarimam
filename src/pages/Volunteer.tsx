@@ -1,17 +1,30 @@
-import React, { useState } from 'react';
-import { Heart, Send, CheckCircle2, User, Mail, Phone, Briefcase } from 'lucide-react';
-import { submitVolunteerApplication } from '../services/cmsService';
+import React, { useState, useEffect } from 'react';
+import { Heart, Send, CheckCircle2, User, Mail, Phone, Briefcase, AlertTriangle } from 'lucide-react';
+import { submitVolunteerApplication, getAboutInfo } from '../services/cmsService';
 import { motion, AnimatePresence } from 'motion/react';
 
 export default function Volunteer() {
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [siteInfo, setSiteInfo] = useState<any>(null);
+  const [fetchingConfig, setFetchingConfig] = useState(true);
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
     phone: '',
     experience: ''
   });
+
+  useEffect(() => {
+    getAboutInfo()
+      .then((info) => {
+        setSiteInfo(info);
+      })
+      .catch((err) => console.error("Error loading volunteer page config:", err))
+      .finally(() => {
+        setFetchingConfig(false);
+      });
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,6 +38,18 @@ export default function Volunteer() {
       setLoading(false);
     }
   };
+
+  if (fetchingConfig) {
+    return (
+      <div className="max-w-4xl mx-auto py-32 text-center text-slate-400 font-bold uppercase tracking-widest text-[11px] animate-pulse space-y-4">
+        <span>Loading Recruitment Status...</span>
+      </div>
+    );
+  }
+
+  const isRecruitingOpen = siteInfo?.volunteerRecruitmentOpen !== "false";
+  const orientationDate = siteInfo?.volunteerOrientationDate || (isRecruitingOpen ? "May 30, 2026" : "Closed");
+  const orientationDetails = siteInfo?.volunteerOrientationDetails || (isRecruitingOpen ? "Main Lobby • 10:00 AM" : "Orientation suspended");
 
   return (
     <div className="max-w-4xl mx-auto space-y-12">
@@ -69,16 +94,35 @@ export default function Volunteer() {
               </ul>
            </div>
 
-           <div className="relative z-10 p-6 bg-white/5 rounded-3xl border border-white/10 mt-10">
-              <p className="text-xs font-bold uppercase tracking-widest text-blue-300 mb-2">Next Orientation</p>
-              <p className="text-xl font-bold">May 30, 2024</p>
-              <p className="text-xs text-blue-100/60 mt-1">Main Lobby • 10:00 AM</p>
+           <div className={`relative z-10 p-6 rounded-3xl border mt-10 transition-colors ${isRecruitingOpen ? 'bg-white/5 border-white/10' : 'bg-red-500/10 border-red-500/20'}`}>
+              <p className={`text-xs font-bold uppercase tracking-widest mb-2 ${isRecruitingOpen ? 'text-blue-300' : 'text-red-400'}`}>Next Orientation</p>
+              <p className="text-xl font-bold">{orientationDate}</p>
+              <p className="text-xs text-blue-100/60 mt-1">{orientationDetails}</p>
            </div>
         </div>
 
         <div className="lg:col-span-3 p-10 md:p-16 flex flex-col justify-center">
           <AnimatePresence mode="wait">
-            {!submitted ? (
+            {!isRecruitingOpen ? (
+              <motion.div 
+                key="closed"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className="text-center space-y-6 max-w-sm mx-auto"
+              >
+                 <div className="w-20 h-20 bg-amber-500/10 rounded-full flex items-center justify-center text-amber-500 mx-auto shadow-sm">
+                    <AlertTriangle size={36} />
+                 </div>
+                 <h2 className="text-2xl font-black text-ngo-blue">Recruitment Closed</h2>
+                 <p className="text-slate-500 text-sm leading-relaxed">
+                   Thank you for your interest! Volunteer recruitment is currently closed. We are not actively enrolling new team members at Sinarimam Foundation at this moment.
+                 </p>
+                 <p className="text-xs text-slate-400">
+                   Please check back soon, or write us at <span className="font-bold text-ngo-blue">{siteInfo?.contactEmail || "info@sinarimamfoundation.org.ng"}</span> for inquiries.
+                 </p>
+              </motion.div>
+            ) : !submitted ? (
               <motion.form 
                 key="form"
                 initial={{ opacity: 0, x: 20 }}
